@@ -53,7 +53,11 @@ AUXILIARES = [
 
 def bajar(sesion: requests.Session, ruta: str, destino: Path) -> tuple[str, bool, str]:
     """Descarga un fichero si no existe ya. Devuelve (ruta, ok, mensaje)."""
-    salida = destino / ruta
+    local = {"GUIA.md": "docs/GUIA.md", "utils_caso.py": "src/data/utils_caso.py",
+             "ver_muestras.py": "src/data/ver_muestras.py"}.get(ruta, ruta)
+    if local.startswith("documentation/"):
+        local = "docs/" + local.removeprefix("documentation/")
+    salida = destino / local
     if salida.exists() and salida.stat().st_size > 0:
         return ruta, True, "ya estaba"
     try:
@@ -92,7 +96,7 @@ def descargar_lote(rutas: list[str], destino: Path, hilos: int, etiqueta: str) -
 def main() -> None:
     p = argparse.ArgumentParser(description=__doc__,
                                 formatter_class=argparse.RawDescriptionHelpFormatter)
-    p.add_argument("--destino", type=Path, default=Path("breastdcedl"))
+    p.add_argument("--destino", type=Path, default=Path(__file__).resolve().parents[2])
     p.add_argument("--hilos", type=int, default=16)
     p.add_argument("--solo-test", action="store_true", help="solo el conjunto de prueba")
     p.add_argument("--pacientes", type=int, metavar="N",

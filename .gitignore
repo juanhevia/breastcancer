@@ -218,3 +218,7 @@ __marimo__/
 .streamlit/secrets.toml
 
 dataset/
+# Resultados locales de entrenamiento
+models/*
+!models/README.md
+.DS_Store
