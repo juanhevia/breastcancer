@@ -84,7 +84,8 @@ def entrenar(
     criterio = torch.nn.BCEWithLogitsLoss(pos_weight=pw)
     optimizador = torch.optim.Adam(modelo.parameters(), lr=lr)
     historial = {k: [] for k in (
-        "epoca", "train_loss", "val_loss", "val_auc", "val_auc_paciente", "segundos"
+        "epoca", "train_loss", "val_loss", "val_auc", "val_auc_paciente", "segundos",
+        "val_accuracy", "val_sensibilidad", "val_especificidad", "val_precision", "val_f1"
     )}
     mejor_val_loss, mejor_state, mejor_epoca = float("inf"), None, 0
     epocas_sin_mejora = 0
@@ -124,7 +125,11 @@ def entrenar(
         val_auc = float(roc_auc_score(y_true, probs)) if len(np.unique(y_true)) == 2 else float("nan")
         res = uc.evaluar_por_paciente(probs, val_samples, umbral=umbral, metodo=metodo_agregacion)
         dt = time.perf_counter() - t0
-        valores = (epoca, train_loss, val_loss, val_auc, res["auc"], dt)
+        cm = res["matriz_confusion"]
+        denominador_f1 = 2 * cm["VP"] + cm["FP"] + cm["FN"]
+        f1 = 2 * cm["VP"] / denominador_f1 if denominador_f1 else float("nan")
+        valores = (epoca, train_loss, val_loss, val_auc, res["auc"], dt,
+                   res["accuracy"], res["sensibilidad"], res["especificidad"], res["precision"], f1)
         for clave, valor in zip(historial, valores):
             historial[clave].append(valor)
         print(f"[{nombre}] Época {epoca:02d}/{epocas} | train_loss={train_loss:.4f} "
@@ -158,21 +163,9 @@ def entrenar(
 
 
 def dibujar_curvas(historial, ruta):
-    import matplotlib
-    matplotlib.use("Agg")
-    import matplotlib.pyplot as plt
-    fig, ejes = plt.subplots(1, 2, figsize=(10, 4), layout="constrained")
-    ejes[0].plot(historial["epoca"], historial["train_loss"], label="Entrenamiento", marker="o")
-    ejes[0].plot(historial["epoca"], historial["val_loss"], label="Validación interna", marker="o")
-    ejes[0].set(ylabel="BCE", xlabel="Época", title="Pérdida")
-    ejes[1].plot(historial["epoca"], historial["val_auc_paciente"], label="Por paciente", marker="o")
-    ejes[1].plot(historial["epoca"], historial["val_auc"], label="Por corte", alpha=.6, marker="o")
-    ejes[1].set(ylabel="ROC-AUC", xlabel="Época", ylim=(0, 1), title="Validación interna")
-    for eje in ejes:
-        eje.legend()
-        eje.grid(alpha=.2)
-    fig.savefig(ruta, dpi=150)
-    plt.close(fig)
+    # Conserva el import usado en versiones anteriores del proyecto.
+    from src.training.graficas import dibujar_curvas as dibujar
+    dibujar(historial, ruta)
 
 
 def main():
@@ -263,10 +256,14 @@ def main():
             "memoria_gpu_max_bytes": torch.cuda.max_memory_allocated() if dispositivo == "cuda" else None,
             "nota_memoria": "Pico CUDA registrado; pico de memoria CPU/MPS no medido",
         })
-        dibujar_curvas(hist, salida / "curvas.png")
+        from src.training.graficas import generar_graficas
+        generar_graficas(salida)
         resumen.append({"perdida": perdida, "mejor_epoca": epoca, **res})
         guardar_json(carpeta / "comparacion.json", resumen)
         print(f"Mejor época de {perdida}: {epoca}; AUC por paciente: {res['auc']:.4f}", flush=True)
+    if len(perdidas) == 2:
+        from src.training.graficas import comparar_perdidas
+        comparar_perdidas(carpeta)
     print(f"Resultados guardados en {carpeta}", flush=True)
 
 

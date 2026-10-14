@@ -45,6 +45,12 @@ class EntrenamientoTests(unittest.TestCase):
                 epocas=2, batch_size=3, dispositivo="cpu", salida=tmp)
             self.assertEqual(epoca, int(np.argmin(hist["val_loss"])) + 1)
             self.assertEqual(res["pacientes"], 2)
+            for clave in ("val_accuracy", "val_sensibilidad", "val_especificidad", "val_precision", "val_f1"):
+                self.assertEqual(len(hist[clave]), 2)
+            cm = res["matriz_confusion"]
+            self.assertAlmostEqual(hist["val_accuracy"][epoca-1], res["accuracy"])
+            self.assertAlmostEqual(hist["val_f1"][epoca-1],
+                                   2*cm["VP"] / (2*cm["VP"] + cm["FP"] + cm["FN"]))
             guardado = torch.load(Path(tmp) / "mejor_modelo.pt", weights_only=True)
             for k, valor in modelo.state_dict().items():
                 self.assertTrue(torch.equal(valor, state[k]))
