@@ -62,7 +62,7 @@ ese pico con CUDA.
 Aún no se ha construido ni desplegado la web ni preparado la presentación.
 Estos entregables están fuera de esta primera fase de organización y entrenamiento.
 
-## Verificación realizada
+## Verificación inicial (7 de octubre de 2026)
 
 - Cuatro pruebas automáticas superadas: forma y gradientes con batch de una
   muestra, separación de pacientes en los cinco folds, guardado/restauración
@@ -76,3 +76,18 @@ Estos entregables están fuera de esta primera fase de organización y entrenami
 
 Los resultados de este subconjunto solo verifican que el programa funciona;
 no justifican ninguna conclusión sobre rendimiento predictivo.
+
+## Actualización: segundo experimento (14 de octubre de 2026)
+
+Ya se recibieron historiales completos del laboratorio: AUC interna por paciente
+de aproximadamente 0,56 para ambas pérdidas, con mejor época 2 y parada en la 9.
+Se incorpora una segunda CNN y opciones de regularización, aumentos, reducción
+del lr y selección por AUC. El baseline sigue disponible y sus pesos son
+compatibles con la clase original. La [guía de v2](experimento_v2.md) explica
+las hipótesis, comandos y cómo comparar sin usar test para ajustar el modelo.
+
+Se han añadido comprobaciones de gradientes de v2, alineación de las fases en
+los aumentos, selección/restauración por AUC, reducción del lr y rechazo de una
+validación sin ambas clases cuando se selecciona por AUC. Estas comprobaciones
+verifican el funcionamiento del código; el rendimiento de v2 requiere entrenar
+con el conjunto completo en el laboratorio.

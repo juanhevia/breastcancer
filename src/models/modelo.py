@@ -51,6 +51,44 @@ class BreastCNN(nn.Module):
         return x.squeeze(1)
 
 
+class BreastCNNV2(nn.Module):
+    """CNN propia, sin preentrenamiento, con más contexto espacial que el baseline.
+
+    Conserva PRE/EARLY/LATE y la salida de un logit. GroupNorm no depende de
+    estadísticas del lote; media y máximo espacial resumen señales difusas y
+    localizadas. Estos cambios son hipótesis que hay que validar, no garantías.
+    """
+
+    def __init__(self):
+        super().__init__()
+        bloques = []
+        entrada = 3
+        for canales in (16, 32, 64, 128):
+            bloques.extend([
+                nn.Conv2d(entrada, canales, 3, padding=1, bias=False),
+                nn.GroupNorm(8, canales),
+                nn.ReLU(),
+                nn.Conv2d(canales, canales, 3, padding=1, bias=False),
+                nn.GroupNorm(8, canales),
+                nn.ReLU(),
+                nn.MaxPool2d(2),
+                nn.Dropout2d(0.1),
+            ])
+            entrada = canales
+        self.features = nn.Sequential(*bloques)
+        self.media = nn.AdaptiveAvgPool2d(1)
+        self.maximo = nn.AdaptiveMaxPool2d(1)
+        self.classifier = nn.Sequential(
+            nn.Flatten(), nn.Dropout(0.4),
+            nn.Linear(256, 64), nn.ReLU(), nn.Dropout(0.3), nn.Linear(64, 1),
+        )
+
+    def forward(self, x):
+        x = self.features(x)
+        x = torch.cat((self.media(x), self.maximo(x)), dim=1)
+        return self.classifier(x).squeeze(1)
+
+
 def contar_parametros(modelo):
     entrenables = sum(p.numel() for p in modelo.parameters() if p.requires_grad)
     total = sum(p.numel() for p in modelo.parameters())

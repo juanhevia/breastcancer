@@ -14,7 +14,7 @@ notebooks/                  Exploración y análisis
 presentations/              Presentación final
 src/
   data/                     utils_caso.py, descargar_datos.py, ver_muestras.py
-  models/modelo.py          Tu arquitectura BreastCNN
+  models/modelo.py          Arquitecturas BreastCNN (baseline) y BreastCNNV2
   training/entrenar.py      Entrenamiento por épocas
 tests/                      Comprobaciones del entrenamiento
 .env.example                Explica la configuración del entorno
@@ -74,7 +74,51 @@ sus cortes. Sus métricas **no son resultados del experimento completo**.
 Opciones iniciales: Adam, lr=0.0001, batch=16, semilla=42, fold=0, umbral=0.5,
 agregación por media y workers=0. Se detecta CUDA, MPS o CPU automáticamente;
 puedes forzar `--dispositivo cpu`. `--hilos 4` limita los hilos de CPU. No se
-usan aumentos de datos todavía: este es el baseline inicial.
+usan aumentos de datos en este modo: es el baseline inicial.
+
+## Segundo experimento: mejorar la AUC por paciente
+
+Las ejecuciones completas recibidas del laboratorio dieron una AUC interna de
+aproximadamente **0,5615 (normal) y 0,5619 (ponderada)**, ambas en la época 2.
+Después bajaba la pérdida de entrenamiento sin mejorar la validación. Añadir
+épocas al mismo entrenamiento no ha mostrado una mejora.
+
+`--experimento v2` activa una CNN propia de cuatro bloques, aumentos moderados
+solo en entrenamiento, AdamW con regularización y reducción automática del lr.
+Guarda la **máxima AUC por paciente** y para tras 12 épocas sin superarla, hasta
+un máximo de 40. Si hay empate, conserva la primera época con esa AUC.
+Se entrenan las pérdidas normal y ponderada de forma independiente.
+
+En el laboratorio, después de subir los cambios a GitHub y actualizar la copia
+local, ejecuta desde la raíz del repositorio:
+
+```bash
+git pull
+conda activate cancer
+export LD_LIBRARY_PATH="$CONDA_PREFIX/lib${LD_LIBRARY_PATH:+:$LD_LIBRARY_PATH}"
+python -m src.training.entrenar --experimento v2 --perdida ambas --dispositivo cuda
+```
+
+`cuda` es también el nombre que PyTorch usa para tu GPU AMD con ROCm. Conserva
+el PyTorch que ya funciona allí: **no reinstales requirements.txt**.
+
+El experimento empieza con pesos nuevos porque cambia la arquitectura; no
+carga el checkpoint anterior. Cada ejecución crea su propia carpeta
+`models/<fecha_hora>_v2/` y conserva los resultados anteriores. No se promete
+superar 0,70: hay que medirlo en el conjunto completo y comprobar que la mejora
+se sostiene en otras particiones internas, manteniendo test reservado.
+
+Para comprobar antes que funciona en la GPU (no mide rendimiento):
+
+```bash
+python -m src.training.entrenar --experimento v2 --epocas 1 --prueba --batch-size 4 --dispositivo cuda
+```
+
+Los argumentos explícitos prevalecen sobre el experimento. Por ejemplo,
+`--epocas 60` cambia el máximo, `--modelo baseline` conserva la CNN original,
+`--no-aumentos` desactiva los aumentos y `--seleccion loss` selecciona por BCE.
+El comando original sin `--experimento v2` mantiene el comportamiento anterior.
+Consulta la [justificación y el protocolo de comparación](docs/experimento_v2.md).
 
 ## Resultados guardados
 
@@ -83,19 +127,13 @@ Cada ejecución crea `models/<fecha_hora>/normal/` y/o `ponderada/` con:
 - `configuracion.json`: hiperparámetros, arquitectura, entorno y tamaños.
 - `particion.csv`: asignación de muestras y pacientes a train/validación.
 - `historial.csv`: pérdida train/validación, AUC por corte y paciente, accuracy,
-  sensibilidad, especificidad, precisión y F1 de validación por paciente, tiempo por época.
-- `mejor_modelo.pt`: pesos de la menor pérdida de validación, guardados durante el entrenamiento.
+  sensibilidad, especificidad, precisión y F1 de validación por paciente, tiempo
+  y tasa de aprendizaje utilizada en cada época.
+- `mejor_modelo.pt`: pesos según el criterio elegido: menor pérdida en baseline,
+  mayor AUC por paciente en v2; guardados durante el entrenamiento.
 - `mejor_validacion.json`: época y métricas correspondientes a esos pesos.
 - `metricas.json`: evaluación del mejor modelo por paciente, con matriz de confusión.
 - `predicciones_validacion.csv`: probabilidades de cada corte del mejor modelo.
-- `curvas.png`: pérdida de entrenamiento/validación y AUC por época.
-- `metricas_epocas.png`: accuracy, sensibilidad, especificidad, precisión y F1 por época.
-- `roc.png`: curva ROC y ROC-AUC del mejor modelo.
-- `precision_recall.png`: curva precisión–recall, AP y prevalencia de referencia.
-- `calibracion.png`: fracción observada frente a puntuación predicha y Brier.
-- `matriz_confusion.png`: recuentos por paciente al umbral configurado.
-- `umbrales.png`: sensibilidad, especificidad, precisión, F1 y accuracy frente al umbral.
-- `distribucion_predicciones.png`: histograma de puntuaciones por clase real.
 - `predicciones_pacientes.csv`: una fila por paciente, con puntuación, etiqueta y predicción.
 - `metricas_umbrales.csv`: valores utilizados para dibujar las curvas de umbral.
 - `ejecucion.json`: duración y pico de memoria CUDA si está disponible. No se mide el pico CPU/MPS.
@@ -105,48 +143,71 @@ y especificidad **por paciente**; las pérdidas normal y ponderada tienen escala
 distintas. El umbral 0.5 es inicial, no está optimizado ni implica calibración.
 Las métricas indefinidas aparecen como `null` en JSON.
 
-Si entrenas ambas pérdidas, `comparacion_roc_pr.png` superpone sus curvas ROC y
-precisión–recall en la carpeta de la ejecución. Usa los mejores modelos y las
-mismas pacientes de validación, sin comparar directamente las escalas de BCE.
+### Tres figuras principales, sin duplicados por modelo
 
-Las gráficas finales usan las predicciones del **mejor checkpoint** sobre la
-validación interna, con el método de agregación y el umbral de esa ejecución.
-No se evalúa test. En modo `--prueba` los títulos indican que es una prueba
-reducida. ROC y precisión–recall muestran un aviso si falta alguna clase.
-La curva de calibración es descriptiva: no modifica ni recalibra el modelo.
-AP es average precision, no un área trapezoidal. Las métricas indefinidas se
-representan como huecos, sin convertirlas artificialmente en cero.
-Con agregación `voto`, se mantiene fijo el umbral que convierte los cortes en
-votos y se varía el umbral sobre la fracción de votos por paciente.
+Cada ejecución crea una carpeta **`models/<ejecucion>/graficas/`** con tres
+figuras. Si entrenas normal y ponderada, ambas aparecen en las mismas figuras:
 
-Las imágenes se guardan automáticamente al terminar **cada pérdida**, sin abrir
-ventanas. El comando de entrenamiento es el mismo y no requiere nuevas librerías.
+| Archivo | Qué explica | Cómo se lee |
+|---|---|---|
+| `01_evolucion_del_aprendizaje.png` | Pérdida de entrenamiento/validación y AUC por paciente durante todas las épocas | Menor pérdida y mayor AUC son preferibles; la línea vertical indica la época elegida. Cada pérdida tiene su propia fila. |
+| `02_capacidad_para_distinguir_pcr.png` | ROC y precisión–sensibilidad de los modelos elegidos | Compara normal y ponderada en las mismas pacientes. Estas curvas recorren umbrales, no épocas. |
+| `03_aciertos_y_errores.png` | Pacientes bien y mal clasificadas con el umbral configurado | Filas: resultado real; columnas: predicción. Incluye nombres de los errores, recuentos y porcentajes dentro de cada clase real. |
 
-`curvas.png` y `metricas_epocas.png` representan **todas las épocas realizadas**,
-también las posteriores a la mejor época. El título indica el número de épocas
-registradas y una línea vertical señala la mejor como referencia. Si solo se
-entrena una época, aparecerá un punto por serie: no se pueden inventar épocas
-adicionales. Si actúa la parada anticipada, se muestran las épocas completadas.
-Las gráficas ROC, precisión–recall y calibración tienen otros ejes: describen
-las predicciones del mejor modelo, no la evolución temporal del entrenamiento.
+En las figuras, **pCR significa respuesta patológica completa**. Una predicción
+de pCR no significa una predicción de presencia de cáncer. Los títulos, ejes y
+notas explican qué se mide y cómo interpretarlo. `LEEME_GRAFICAS.md` acompaña las
+imágenes y registra qué época, criterio, agregación y umbral se usaron.
 
-### Generar gráficas de un entrenamiento ya terminado
+Las figuras se actualizan automáticamente al terminar **cada pérdida**. Mientras
+solo ha terminado la normal, muestran ese modelo; cuando termina la ponderada,
+las mismas tres figuras incluyen ambos. No se crea otra copia por cada métrica.
 
-También puedes obtenerlas de los CSV guardados, **sin volver a entrenar**:
+Se muestran **todas las épocas**, incluidas las posteriores a la elegida. Una
+sola época produce un punto; los valores indefinidos quedan como huecos. La AUC
+por corte y las demás métricas por época siguen en `historial.csv`; la figura
+principal se centra en la AUC por paciente, que es la unidad de evaluación.
+No se suavizan ni se alteran los resultados.
+
+ROC y precisión–sensibilidad requieren ambas clases. La referencia de la segunda
+es la proporción real de pCR. AP es average precision, no el área trapezoidal.
+Las figuras usan validación interna, no test. En modo `--prueba` llevan un aviso
+visible de que el subconjunto no estima el rendimiento real.
+
+### Regenerar las figuras sin entrenar
+
+Desde la raíz del proyecto, indica la carpeta que contiene `normal/` y
+`ponderada/` para obtener el informe conjunto:
 
 ```bash
 python -m src.training.graficas models/NOMBRE_DE_LA_EJECUCION
 ```
 
-Sustituye el nombre por la carpeta real. También puedes pasar su subcarpeta
-`normal` o `ponderada`. Conserva `configuracion.json`, `metricas.json`,
-`historial.csv` y `predicciones_validacion.csv` juntos. Se regeneran las gráficas
-y los CSV derivados; no se modifican los pesos ni los CSV originales. En
-entrenamientos antiguos, `metricas_epocas.png` no se puede reconstruir porque
-esas métricas no se guardaban por época; las demás gráficas sí.
+También admite una subcarpeta `normal` o `ponderada` para un informe de un único
+modelo. Se necesitan `configuracion.json`, `metricas.json`, `historial.csv` y
+`predicciones_validacion.csv`. Se actualizan las figuras y los CSV derivados;
+los pesos y datos originales se conservan. Las imágenes de versiones anteriores
+permanecen donde estaban; el informe nuevo está dentro de `graficas/`.
+
+### Diagnósticos adicionales, solo si los necesitas
+
+```bash
+python -m src.training.graficas models/NOMBRE_DE_LA_EJECUCION --detalle
+```
+
+Añade **una hoja por modelo** dentro de `graficas/detalle/`, con cuatro paneles:
+calibración, efecto del umbral, distribución de puntuaciones y otras métricas
+por época. Son 3 figuras principales más 2 hojas adicionales si hay dos modelos.
+Si un historial antiguo no contiene las métricas por época, ese panel lo indica.
+
+La calibración usa intervalos de puntuaciones; pocos puntos significan pocos
+intervalos ocupados, no pocas épocas. No recalibra el modelo. Las puntuaciones
+no garantizan probabilidades calibradas, especialmente con BCE ponderada o
+agregación por voto. Con `voto`, las curvas de umbral mantienen fijo el umbral que
+convierte cada corte en voto y varían el umbral sobre la fracción de votos.
 
 Para el laboratorio con Conda y ROCm, activa `cancer` y conserva tu instalación
-funcional de PyTorch. Este cambio de gráficas no necesita reinstalar
+funcional de PyTorch. Las gráficas y el experimento v2 no necesitan reinstalar
 `requirements.txt` (que fija la versión 2.2.2 del entorno inicial del Mac).
 
 ## Otros comandos
