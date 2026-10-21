@@ -59,10 +59,10 @@ class BreastCNNV2(nn.Module):
     localizadas. Estos cambios son hipótesis que hay que validar, no garantías.
     """
 
-    def __init__(self):
+    def __init__(self, canales_entrada=3):
         super().__init__()
         bloques = []
-        entrada = 3
+        entrada = canales_entrada
         for canales in (16, 32, 64, 128):
             bloques.extend([
                 nn.Conv2d(entrada, canales, 3, padding=1, bias=False),
@@ -150,6 +150,56 @@ class BreastCNNV5(BreastCNNV2):
 
     def forward(self, x):
         return super().forward(self.reducir(x))
+
+
+class ContrasteConjuntoDCE(nn.Module):
+    """Vista auxiliar con una única ventana de intensidad para las tres fases.
+
+    Percentiles 5/95 de píxeles >0 del corte completo (PRE/EARLY/LATE juntos).
+    No estima estadísticas del lote ni usa etiquetas. Ganancia limitada a 3
+    para evitar amplificar excesivamente cortes de bajo contraste. Se recortan
+    las colas a [0,1]; por eso V6 conserva también los canales originales.
+    """
+
+    def __init__(self):
+        super().__init__()
+        self.register_buffer("percentiles", torch.tensor([.05, .95]))
+        self.register_buffer("ganancia_maxima", torch.tensor(3.0))
+
+    def forward(self, x):
+        if x.ndim != 4 or x.shape[1] != 3:
+            raise ValueError("Se espera (batch, 3, alto, ancho) PRE/EARLY/LATE.")
+        # float32 para quantile incluso si más adelante se activa precisión mixta.
+        valores = x.detach().float().flatten(1)
+        sin_fondo = valores.masked_fill(valores <= 0, float("nan"))
+        limites = torch.nanquantile(sin_fondo, self.percentiles.float(), dim=1)
+        bajo, alto = limites[0], limites[1]
+        validos = torch.isfinite(bajo) & torch.isfinite(alto) & ((alto - bajo) > 1e-6)
+        bajo = torch.nan_to_num(bajo).reshape(-1, 1, 1, 1)
+        rango = torch.nan_to_num(alto - limites[0]).clamp_min(
+            1 / self.ganancia_maxima).reshape(-1, 1, 1, 1)
+        ajustado = ((x - bajo) / rango).clamp(0, 1)
+        # Cortes vacíos/constantes: conservarlos, sin NaN ni contraste artificial.
+        return torch.where(validos.reshape(-1, 1, 1, 1), ajustado, x).to(x.dtype)
+
+
+class BreastCNNV6(BreastCNNV2):
+    """V2 con seis canales internos: fases originales + contraste conjunto.
+
+    Entrada externa: tres PNG /255, a resolución completa. Preprocesado fijo
+    dentro del modelo, idéntico en train, validación e inferencia. CNN propia
+    desde cero; no incorpora imágenes nuevas, pesos preentrenados ni clínica.
+    """
+
+    def __init__(self):
+        super().__init__(canales_entrada=6)
+        self.contraste = ContrasteConjuntoDCE()
+
+    def preparar_entrada(self, x):
+        return torch.cat((x, self.contraste(x)), dim=1)
+
+    def forward(self, x):
+        return super().forward(self.preparar_entrada(x))
 
 
 def contar_parametros(modelo):

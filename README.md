@@ -201,6 +201,23 @@ del conjunto completo. La reducción de resolución busca acelerar el cálculo,
 pero el entrenamiento completo puede seguir durando horas. Resultados en
 `models/<fecha_hora>_v5/`. Consulta la [arquitectura, protocolo y comandos de v5](docs/experimento_v5.md).
 
+## Sexto experimento: v6 con contraste conjunto
+
+V6 conserva el cuerpo de v2 y recibe las tres fases originales junto con una
+copia ajustada de intensidad/contraste: seis canales internos. La ventana
+p5–p95 es común a PRE/EARLY/LATE, con ganancia máxima 3; no sustituye los
+originales ni usa saturación RGB. Se aplica dentro del modelo también en
+inferencia. Se recupera lr=0,0001 de v2, no el 0,0003 de v2_lr.
+
+```bash
+python -m src.training.entrenar --experimento v6 --perdida ambas --dispositivo cuda --batch-size 16
+```
+
+Hasta 40 épocas por pérdida, paciencia 12, con pesos por época y figuras
+individuales PNG/PDF. Añadir `--prueba --epocas 1` para verificar primero la GPU.
+El entrenamiento completo todavía no ha demostrado mejorar v2 ni alcanzar 0,70.
+Consulta el [protocolo, preprocesado y límites de v6](docs/experimento_v6.md).
+
 ## Resultados guardados
 
 Las pruebas realizadas en casa y las referencias recibidas del laboratorio se
