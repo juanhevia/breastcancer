@@ -1,0 +1,97 @@
+{
+  "modelos": {
+    "models/20261016_000244_480633_v3/normal": [
+      {
+        "cohorte": "todas",
+        "pacientes": 219,
+        "pcr": 64,
+        "auc": 0.5495967741935484,
+        "prob_media": 0.21641009912328768,
+        "prob_media_pcr": 0.2266434544125,
+        "prob_media_no_pcr": 0.21218471371354838,
+        "vp_umbral_05": 0,
+        "fp_umbral_05": 0
+      },
+      {
+        "cohorte": "duke",
+        "pacientes": 42,
+        "pcr": 11,
+        "auc": 0.6862170087976539,
+        "prob_media": 0.19469626813333332,
+        "prob_media_pcr": 0.23136584163636362,
+        "prob_media_no_pcr": 0.18168448398709675,
+        "vp_umbral_05": 0,
+        "fp_umbral_05": 0
+      },
+      {
+        "cohorte": "spy1",
+        "pacientes": 21,
+        "pcr": 4,
+        "auc": 0.8235294117647058,
+        "prob_media": 0.19780684663809522,
+        "prob_media_pcr": 0.260498129,
+        "prob_media_no_pcr": 0.18305595667058824,
+        "vp_umbral_05": 0,
+        "fp_umbral_05": 0
+      },
+      {
+        "cohorte": "spy2",
+        "pacientes": 156,
+        "pcr": 49,
+        "auc": 0.48025939347701696,
+        "prob_media": 0.22476041453205126,
+        "prob_media_pcr": 0.2228196797632653,
+        "prob_media_no_pcr": 0.22564916222990655,
+        "vp_umbral_05": 0,
+        "fp_umbral_05": 0
+      }
+    ],
+    "models/20261016_111022_260137_v4/normal": [
+      {
+        "cohorte": "todas",
+        "pacientes": 219,
+        "pcr": 64,
+        "auc": 0.5582661290322581,
+        "prob_media": 0.2808939014560122,
+        "prob_media_pcr": 0.2887035703359375,
+        "prob_media_no_pcr": 0.27766926398301073,
+        "vp_umbral_05": 0,
+        "fp_umbral_05": 0
+      },
+      {
+        "cohorte": "duke",
+        "pacientes": 42,
+        "pcr": 11,
+        "auc": 0.6070381231671553,
+        "prob_media": 0.273997970563492,
+        "prob_media_pcr": 0.28938516345454546,
+        "prob_media_no_pcr": 0.2685379988924731,
+        "vp_umbral_05": 0,
+        "fp_umbral_05": 0
+      },
+      {
+        "cohorte": "spy1",
+        "pacientes": 21,
+        "pcr": 4,
+        "auc": 0.48529411764705876,
+        "prob_media": 0.24315865920952384,
+        "prob_media_pcr": 0.25971888925000003,
+        "prob_media_no_pcr": 0.23926213449411762,
+        "vp_umbral_05": 0,
+        "fp_umbral_05": 0
+      },
+      {
+        "cohorte": "spy2",
+        "pacientes": 156,
+        "pcr": 49,
+        "auc": 0.5370970818233836,
+        "prob_media": 0.2878302423833334,
+        "prob_media_pcr": 0.2909166560510204,
+        "prob_media_no_pcr": 0.2864168379934579,
+        "vp_umbral_05": 0,
+        "fp_umbral_05": 0
+      }
+    ]
+  },
+  "omitidos": []
+}

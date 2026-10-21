@@ -1,0 +1,4 @@
+{
+  "motivo": "KeyboardInterrupt; entrenamiento incompleto",
+  "nota": "Se conservan los resultados guardados de épocas completadas. No se inicia la siguiente pérdida."
+}

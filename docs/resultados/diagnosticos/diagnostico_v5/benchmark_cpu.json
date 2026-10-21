@@ -1,0 +1,24 @@
+{
+  "nota": "CPU, 4 hilos, lote sintético de 8 cortes 256x256, forward+BCE+backward, 5 repeticiones alternadas tras calentamiento. Sin carga de PNG ni validación; no estima AUC ni tiempo de época completa.",
+  "segundos": {
+    "v2": [
+      1.8159991729771718,
+      1.939624817983713,
+      1.6964962150086649,
+      1.5497356390114874,
+      1.8236688259930816
+    ],
+    "v5": [
+      0.4878888319944963,
+      0.41293768599280156,
+      0.36045633000321686,
+      0.48851190399727784,
+      0.377649093978107
+    ]
+  },
+  "mediana": {
+    "v2": 1.8159991729771718,
+    "v5": 0.41293768599280156
+  },
+  "factor_v2_sobre_v5": 4.397755967976313
+}

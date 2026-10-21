@@ -1,0 +1,3 @@
+epoca,train_loss,val_loss,val_auc,val_auc_paciente,segundos,val_accuracy,val_sensibilidad,val_especificidad,val_precision,val_f1,lr,epocas_sin_mejora,referencia_paciencia,train_eval_loss,train_auc_paciente,brecha_auc
+1,0.7270276281568739,0.7089493155479432,0.4125,0.25,5.067277232010383,0.5,0.0,1.0,,0.0,0.0001,0,0.25,0.6810756921768188,0.5,0.25
+2,0.6987437936994765,0.7018940567970275,0.4925,0.5,5.28206295898417,0.5,0.0,1.0,,0.0,0.0001,0,0.5,0.674880239698622,0.5,0.0

@@ -1,0 +1,2 @@
+epoca,train_loss,val_loss,val_auc,val_auc_paciente,segundos
+1,0.674587176905738,0.7009173154830932,1.0,1.0,18.819158444000095

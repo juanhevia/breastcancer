@@ -1,0 +1,20 @@
+{
+  "epoca": 2,
+  "seleccion": "auc",
+  "valor_seleccion": 0.5633064516129032,
+  "val_loss": 0.9772037863731384,
+  "pacientes": 219,
+  "metodo": "mean",
+  "umbral": 0.5,
+  "matriz_confusion": {
+    "VP": 0,
+    "VN": 155,
+    "FP": 0,
+    "FN": 64
+  },
+  "accuracy": 0.7077625570776256,
+  "sensibilidad": 0.0,
+  "especificidad": 1.0,
+  "precision": null,
+  "auc": 0.5633064516129032
+}

@@ -1,0 +1,22 @@
+{
+  "modelo": "v2",
+  "pacientes": 8,
+  "cortes": 8,
+  "fold_excluido": 0,
+  "semilla": 42,
+  "lr": 0.001,
+  "dropout": 0,
+  "weight_decay": 0,
+  "aumentos": false,
+  "pasos_maximos": 100,
+  "max_segundos": 240.0,
+  "ultima_medicion": {
+    "paso": 30,
+    "loss": 0.00011699533934006467,
+    "accuracy": 1.0,
+    "auc_sobre_train": 1.0,
+    "segundos": 41.91667109899572
+  },
+  "ajuste_logrado": true,
+  "significado": "Ajustar estas mismas imágenes comprueba capacidad de optimización. NO mide generalización ni valida las etiquetas clínicas."
+}

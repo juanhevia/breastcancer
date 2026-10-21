@@ -1,0 +1,6 @@
+{
+  "segundos_total_entrenamiento_y_evaluacion": 49.65841810400161,
+  "epocas_completadas": 2,
+  "memoria_gpu_max_bytes": null,
+  "nota_memoria": "Pico CUDA registrado; pico de memoria CPU/MPS no medido"
+}

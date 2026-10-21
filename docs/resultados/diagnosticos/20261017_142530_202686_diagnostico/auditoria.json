@@ -1,0 +1,51 @@
+{
+  "errores": [],
+  "pacientes": 1273,
+  "cortes": 12703,
+  "pacientes_compartidas": 0,
+  "cohortes": [
+    {
+      "uso": "train",
+      "cohorte": "duke",
+      "pacientes": 167,
+      "pcr": 33,
+      "prevalencia": 0.19760479041916168
+    },
+    {
+      "uso": "train",
+      "cohorte": "spy1",
+      "pacientes": 83,
+      "pcr": 22,
+      "prevalencia": 0.26506024096385544
+    },
+    {
+      "uso": "train",
+      "cohorte": "spy2",
+      "pacientes": 628,
+      "pcr": 203,
+      "prevalencia": 0.3232484076433121
+    },
+    {
+      "uso": "validacion",
+      "cohorte": "duke",
+      "pacientes": 42,
+      "pcr": 11,
+      "prevalencia": 0.2619047619047619
+    },
+    {
+      "uso": "validacion",
+      "cohorte": "spy1",
+      "pacientes": 21,
+      "pcr": 4,
+      "prevalencia": 0.19047619047619047
+    },
+    {
+      "uso": "validacion",
+      "cohorte": "spy2",
+      "pacientes": 156,
+      "pcr": 49,
+      "prevalencia": 0.3141025641025641
+    }
+  ],
+  "limites": "Audita metadatos. No detecta duplicados de píxeles ni errores clínicos de las etiquetas."
+}

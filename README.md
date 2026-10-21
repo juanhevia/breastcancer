@@ -203,6 +203,11 @@ pero el entrenamiento completo puede seguir durando horas. Resultados en
 
 ## Resultados guardados
 
+Las pruebas realizadas en casa y las referencias recibidas del laboratorio se
+pueden consultar en [resultados publicados](docs/resultados/README.md), con
+historiales, métricas y gráficas disponibles. El índice distingue pruebas cortas,
+entrenamientos finalizados e intentos sin cierre registrado.
+
 Para revisar integridad, capacidad de aprendizaje y resultados por cohorte,
 consulta el [diagnóstico y siguiente control de v2](docs/diagnostico_y_siguiente_control.md).
 `python3 -m src.training.diagnostico` analiza metadatos y predicciones existentes;
