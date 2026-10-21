@@ -14,9 +14,15 @@ class AumentosDCE:
     Usa el generador de PyTorch, que DataLoader inicializa también en workers.
     """
 
+    def __init__(self, rotaciones90=False):
+        # Opción de v5: 0/90/180/270 grados equiprobables, sin interpolación.
+        self.rotaciones90 = rotaciones90
+
     def __call__(self, imagen):
         if imagen.ndim != 3 or imagen.shape[0] != 3:
             raise ValueError("Se espera un tensor (3, alto, ancho) PRE/EARLY/LATE.")
+        if self.rotaciones90:
+            imagen = torch.rot90(imagen, int(torch.randint(4, ()).item()), dims=(-2, -1))
         if torch.rand(()).item() < 0.5:
             imagen = torch.flip(imagen, dims=(-1,))
         angulo = (torch.rand(()).item() * 20 - 10) * math.pi / 180

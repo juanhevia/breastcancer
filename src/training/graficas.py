@@ -123,9 +123,16 @@ def dibujar_evolucion(registros, ruta):
         epocas = hist["epoca"]
         total = len(epocas)
         nota = f"{total} épocas registradas" if total != 1 else "1 época: todavía no hay evolución"
-        perdida.plot(epocas, hist["train_loss"], label="Entrenamiento", marker="o", markersize=3)
+        comparable = "train_eval_loss" in hist
+        perdida.plot(epocas, hist["train_eval_loss"] if comparable else hist["train_loss"],
+                     label="Entrenamiento (evaluación)" if comparable else "Entrenamiento", marker="o", markersize=3)
         perdida.plot(epocas, hist["val_loss"], label="Validación interna", marker="o", markersize=3)
-        perdida.set(title=f"{r['nombre']} · pérdida (menor es mejor)", xlabel="Época", ylabel="Pérdida BCE")
+        unidad = r["config"].get("unidad_perdidas_historial", "corte")
+        perdida.set(title=f"{r['nombre']} · pérdida (menor es mejor)", xlabel="Época",
+                    ylabel=f"Pérdida BCE por {unidad}")
+        if "train_auc_paciente" in hist:
+            auc.plot(epocas, hist["train_auc_paciente"], marker="o", markersize=3,
+                     label="AUC en entrenamiento por paciente", color="tab:blue")
         auc.plot(epocas, hist["val_auc_paciente"], marker="o", markersize=3,
                  label="AUC en validación por paciente", color="tab:green")
         auc.axhline(.5, color="gray", ls=":", label="Referencia aleatoria = 0,50")
@@ -141,9 +148,12 @@ def dibujar_evolucion(registros, ruta):
         perdida.text(0, 1.12, nota, transform=perdida.transAxes, fontsize=9)
         auc.text(0, 1.12, f"Selección: {criterio_seleccion(r)}", transform=auc.transAxes, fontsize=9)
     fig.suptitle("1. ¿Cómo aprende el modelo a lo largo de las épocas?\n" + titulo_general(registros), fontsize=14)
-    pie(fig, "Izquierda: error en los cortes de entrenamiento y validación. Derecha: capacidad de ordenar las pacientes según pCR.\n"
+    nota_train = ("Train y validación se evalúan sin aumentos ni dropout; la pérdida durante la optimización se conserva en el CSV."
+                  if all("train_eval_loss" in r["historial"] for r in registros)
+                  else "Si la leyenda dice «evaluación», train se mide sin aumentos ni dropout; en historiales antiguos es la pérdida de optimización.")
+    pie(fig, "Izquierda: error de entrenamiento y validación (unidad indicada en el eje). Derecha: capacidad de ordenar las pacientes según pCR.\n"
         "Se muestran TODAS las épocas; la línea vertical solo señala los pesos elegidos. Las BCE normal y ponderada tienen escalas distintas.\n"
-        "Entrenamiento puede usar aumentos y dropout; validación los desactiva. " + DEFINICION)
+        + nota_train + "\n" + DEFINICION)
     guardar(fig, ruta)
 
 
@@ -303,7 +313,7 @@ def generar_graficas(carpeta, detalle=False):
         for r in registros:
             dibujar_detalle(r, adicionales / f"{r['origen'].name}_diagnostico.png")
     lineas = ["# Cómo leer estas tres figuras", "", titulo_general(registros), "", DEFINICION, "",
-              "1. **Evolución del aprendizaje:** pérdida por corte y AUC por paciente durante TODAS las épocas. "
+              "1. **Evolución del aprendizaje:** pérdida (unidad indicada en el eje) y AUC por paciente durante TODAS las épocas. "
               "La línea vertical identifica los pesos elegidos. Menor pérdida y mayor AUC son preferibles; "
               "sus evoluciones no tienen por qué coincidir. Las BCE normal y ponderada no comparten escala.", "",
               "2. **Capacidad para distinguir pCR:** ROC y precisión–sensibilidad de la época elegida. "
@@ -319,6 +329,18 @@ def generar_graficas(carpeta, detalle=False):
         m = r["metricas"]
         lineas.append(f"- {r['nombre']}: {len(r['tabla'])} pacientes; agregación `{m['metodo']}`; "
                       f"época {m['mejor_epoca']} elegida por {criterio_seleccion(r)}; umbral {m['umbral']:g}.")
+        unidad = r["config"].get("unidad_perdidas_historial", "corte")
+        lineas.append(f"  Las pérdidas de entrenamiento y validación se calculan por **{unidad}**. "
+                      "No comparar directamente BCE por corte con BCE por paciente entre experimentos.")
+        if m.get("brecha_auc") is not None:
+            lineas.append(f"  AUC de entrenamiento en esa época: {m['entrenamiento']['auc']:.4f}; "
+                          f"diferencia AUC train − validación: {m['brecha_auc']:.4f}. "
+                          "Entrenamiento evaluado sin aumentos ni dropout; no interviene en la selección.")
+    lineas += ["", "Si existe train_eval_loss, la figura 1 compara las pérdidas de train y validación "
+               "medidas en modo evaluación, sin aumentos ni dropout, con los mismos pesos al final de cada época. "
+               "La columna train_loss conserva la pérdida durante la optimización. Si se registró "
+               "train_auc_paciente, se representa junto a la AUC de validación; los historiales antiguos "
+               "no permiten reconstruir esta AUC sin pesos e imágenes."]
     lineas += ["", "Las métricas son de validación interna, usada para seleccionar el modelo; no son una evaluación en test. "
                "Una sola época produce un punto, y una sola clase impide estimar ROC y precisión–sensibilidad.", "",
                "Con agregación `voto`, el umbral configurado convierte primero los cortes en votos. "

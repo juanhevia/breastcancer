@@ -57,6 +57,23 @@ class GraficasTests(unittest.TestCase):
         (carpeta / "configuracion.json").write_text(json.dumps({"perdida": nombre, "prueba": True}))
         (carpeta / "metricas.json").write_text(json.dumps({"mejor_epoca": 1, "metodo": "mean", "umbral": .5}))
 
+    def test_curvas_comparan_train_evaluado_y_validacion(self):
+        hist = dict(epoca=[1, 2], train_loss=[.9, .8], train_eval_loss=[.6, .5],
+                    val_loss=[.7, .8], val_auc_paciente=[.6, .65], train_auc_paciente=[.7, .9])
+        lineas = {}
+
+        def inspeccionar(fig, ruta):
+            for eje in fig.axes:
+                for linea in eje.lines:
+                    lineas[linea.get_label()] = linea.get_ydata()
+            guardar(fig, ruta)
+
+        with tempfile.TemporaryDirectory() as tmp, patch("src.training.graficas.guardar", side_effect=inspeccionar):
+            dibujar_curvas(hist, Path(tmp) / "curvas.png", mejor_epoca=2)
+        np.testing.assert_array_equal(lineas["Entrenamiento (evaluación)"], hist["train_eval_loss"])
+        np.testing.assert_array_equal(lineas["AUC en entrenamiento por paciente"], hist["train_auc_paciente"])
+        np.testing.assert_array_equal(lineas["AUC en validación por paciente"], hist["val_auc_paciente"])
+
     def predicciones(self):
         # Distinto número de cortes por paciente: el AUC debe pesar pacientes.
         return pd.DataFrame({

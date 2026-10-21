@@ -89,6 +89,69 @@ class BreastCNNV2(nn.Module):
         return self.classifier(x).squeeze(1)
 
 
+class RealceDCE(nn.Module):
+    """Cambio de base fijo: PRE, EARLY-PRE, LATE-EARLY, sin dividir por PRE.
+
+    Conserva toda la información de las tres fases: EARLY = PRE + diferencia1
+    y LATE = EARLY + diferencia2. Los cambios negativos son válidos.
+    """
+
+    def forward(self, x):
+        return torch.cat((x[:, 0:1], x[:, 1:2] - x[:, 0:1],
+                          x[:, 2:3] - x[:, 1:2]), dim=1)
+
+
+class BreastCNNV3(nn.Module):
+    """CNN propia pequeña con diferencias temporales y resumen espacial 2×2.
+
+    Entrada externa idéntica: PRE/EARLY/LATE divididas entre 255. El cambio de
+    base está dentro de la red, también en inferencia; no usa datos clínicos.
+    """
+
+    def __init__(self):
+        super().__init__()
+        self.realce = RealceDCE()
+        bloques = []
+        entrada = 3
+        for canales in (16, 24, 48, 64):
+            bloques.extend([
+                nn.Conv2d(entrada, canales, 3, padding=1, bias=False),
+                nn.BatchNorm2d(canales), nn.ReLU(),
+                nn.Conv2d(canales, canales, 3, padding=1, bias=False),
+                nn.BatchNorm2d(canales), nn.ReLU(), nn.MaxPool2d(2),
+            ])
+            if canales >= 48:
+                bloques.append(nn.Dropout2d(0.1))
+            entrada = canales
+        self.features = nn.Sequential(*bloques)
+        self.pool = nn.AdaptiveAvgPool2d((2, 2))
+        self.classifier = nn.Sequential(
+            nn.Flatten(), nn.Dropout(0.4), nn.Linear(64 * 2 * 2, 32),
+            nn.ReLU(), nn.Linear(32, 1),
+        )
+
+    def forward(self, x):
+        x = self.features(self.realce(x))
+        return self.classifier(self.pool(x)).squeeze(1)
+
+
+class BreastCNNV5(BreastCNNV2):
+    """V2 a media resolución, con media 2×2 antes de las convoluciones.
+
+    Recibe las mismas fases originales /255. La reducción está dentro del
+    modelo para usarla también en inferencia. No recorta regiones ni selecciona
+    lesiones. Busca menor coste y sensibilidad al detalle fino; puede perder
+    información útil y no garantiza mejorar la AUC.
+    """
+
+    def __init__(self):
+        super().__init__()
+        self.reducir = nn.AvgPool2d(kernel_size=2, stride=2)
+
+    def forward(self, x):
+        return super().forward(self.reducir(x))
+
+
 def contar_parametros(modelo):
     entrenables = sum(p.numel() for p in modelo.parameters() if p.requires_grad)
     total = sum(p.numel() for p in modelo.parameters())

@@ -14,7 +14,7 @@ notebooks/                  Exploración y análisis
 presentations/              Presentación final
 src/
   data/                     utils_caso.py, descargar_datos.py, ver_muestras.py
-  models/modelo.py          Arquitecturas BreastCNN (baseline) y BreastCNNV2
+  models/modelo.py          Arquitecturas propias: baseline, v2, v3 y v5
   training/entrenar.py      Entrenamiento por épocas
 tests/                      Comprobaciones del entrenamiento
 .env.example                Explica la configuración del entorno
@@ -120,7 +120,95 @@ Los argumentos explícitos prevalecen sobre el experimento. Por ejemplo,
 El comando original sin `--experimento v2` mantiene el comportamiento anterior.
 Consulta la [justificación y el protocolo de comparación](docs/experimento_v2.md).
 
+## Tercer experimento: v3 con diferencias entre fases
+
+V3 prueba una CNN más pequeña que v2, con representación interna PRE,
+EARLY−PRE y LATE−EARLY, y una media espacial 2×2. La entrada externa sigue
+siendo las tres fases originales /255; no se añaden variables clínicas.
+Los cambios buscan mejorar el aprendizaje y reducir el sobreajuste, pero
+**no garantizan AUC 0,70**.
+
+Después de sincronizar el código, con el entorno `cancer` activado y conservando
+su instalación de PyTorch ROCm:
+
+```bash
+python -m src.training.entrenar --experimento v3 --perdida ambas --dispositivo cuda
+```
+
+Entrena desde cero hasta 40 épocas por pérdida, con paciencia 12. Mantiene los
+hiperparámetros de v2 y añade evaluación completa de train al final de cada época,
+sin aumentos ni dropout. Así se comparan AUC y pérdidas de train y validación con
+los mismos pesos. Esta evaluación tarda un tiempo adicional y puede activarse
+también para v2 con `--evaluar-train`.
+
+Se mantienen tres figuras principales; la primera incorpora ambas AUC. Los
+resultados van a `models/<fecha_hora>_v3/`, sin sustituir los anteriores.
+Consulta la [arquitectura, justificación y límites de v3](docs/experimento_v3.md).
+
+## Cuarto experimento: v4 aprende por paciente
+
+V3 normal obtuvo AUC de validación 0,550, por debajo del 0,612 de v2.
+V4 conserva la arquitectura de **v2** y entrena pesos nuevos. El cambio está
+en el aprendizaje: primero promedia las probabilidades de todos los cortes de
+cada paciente y después calcula su pérdida. Así el objetivo coincide con la
+unidad de evaluación, en lugar de exigir la etiqueta de la paciente a cada
+corte de forma independiente. Todavía no se ha demostrado que mejore la AUC.
+
+En la terminal integrada de VS Code en el Mac, desde la raíz del proyecto:
+
+```bash
+python3 -m src.training.entrenar --experimento v4 --perdida ambas --dispositivo cpu --batch-size 8
+```
+
+Entrena **normal y después ponderada**, hasta 40 épocas cada una y parada tras
+12 sin mejorar. El entrenamiento usa 2 pacientes completas por paso; batch-size
+solo controla el lote de evaluación en este modo. La ponderación se calcula
+con las pacientes de train. Se guardan ambas AUC y pérdidas por paciente en
+todas las épocas, además de las tres figuras habituales. Los resultados van
+a `models/<fecha_hora>_v4/`. En el laboratorio, tras sincronizar el código,
+usar `python` del entorno `cancer` y `--dispositivo cuda`.
+
+Para una prueba corta, añadir `--prueba --epocas 2`; no mide rendimiento.
+Los entrenamientos completos en CPU pueden tardar horas. No se promete AUC
+0,70 ni menor tiempo que v3. Consulta la [hipótesis, comandos y comparación de v4](docs/experimento_v4.md).
+
+## Quinto experimento: v5 a media resolución
+
+V5 conserva las capas entrenables de v2, pero añade una media 2×2 dentro de
+la red para trabajar a 128×128. También prueba giros de 90° conjuntos de las
+tres fases en entrenamiento. Busca reducir el coste y la dependencia de la
+orientación y el detalle fino; puede perder información útil y **todavía no
+se ha demostrado que mejore el AUC**.
+
+Vuelve a BCE por corte y mantiene evaluación por paciente. Se guardan las
+curvas completas de train y validación. En la terminal integrada de VS Code,
+con la ejecución anterior detenida y desde la raíz del proyecto:
+
+```bash
+python3 -m src.training.entrenar --experimento v5 --perdida ambas --dispositivo cpu --batch-size 8
+```
+
+Entrena normal y después ponderada, hasta 40 épocas cada una. V5 para tras
+8 épocas sin superar en más de 0,002 la última referencia significativa.
+Los avances pequeños se acumulan para esa comparación; cualquier récord de
+AUC se guarda como mejor checkpoint, aunque no reinicie la paciencia.
+El CSV incluye el contador `epocas_sin_mejora`: la parada ya no se deduce
+solo de la época del mejor checkpoint. Los experimentos anteriores conservan
+su criterio original por defecto.
+
+Para probar el funcionamiento, añadir `--prueba --epocas 2`. No estima el AUC
+del conjunto completo. La reducción de resolución busca acelerar el cálculo,
+pero el entrenamiento completo puede seguir durando horas. Resultados en
+`models/<fecha_hora>_v5/`. Consulta la [arquitectura, protocolo y comandos de v5](docs/experimento_v5.md).
+
 ## Resultados guardados
+
+Para revisar integridad, capacidad de aprendizaje y resultados por cohorte,
+consulta el [diagnóstico y siguiente control de v2](docs/diagnostico_y_siguiente_control.md).
+`python3 -m src.training.diagnostico` analiza metadatos y predicciones existentes;
+`--memorizacion` añade una prueba pequeña sobre las mismas imágenes entrenadas,
+sin valor como estimación de generalización. El nuevo control `--experimento v2_lr`
+conserva v2 y cambia lr de 0,0001 a 0,0003; todavía no ha demostrado mejorar su AUC.
 
 Cada ejecución crea `models/<fecha_hora>/normal/` y/o `ponderada/` con:
 
@@ -134,9 +222,17 @@ Cada ejecución crea `models/<fecha_hora>/normal/` y/o `ponderada/` con:
 - `mejor_validacion.json`: época y métricas correspondientes a esos pesos.
 - `metricas.json`: evaluación del mejor modelo por paciente, con matriz de confusión.
 - `predicciones_validacion.csv`: probabilidades de cada corte del mejor modelo.
+- Con `--evaluar-train` (activado en v3, v4 y v5): `predicciones_entrenamiento.csv` del
+  mejor modelo; `train_eval_loss`, `train_auc_paciente` y `brecha_auc` en el
+  historial; métricas de train y brecha de la época elegida en `metricas.json`.
 - `predicciones_pacientes.csv`: una fila por paciente, con puntuación, etiqueta y predicción.
 - `metricas_umbrales.csv`: valores utilizados para dibujar las curvas de umbral.
 - `ejecucion.json`: duración y pico de memoria CUDA si está disponible. No se mide el pico CPU/MPS.
+
+Las predicciones de validación y metricas.json se guardan con cada nuevo mejor
+checkpoint, sin esperar al final. Si se detiene con Ctrl+C tras una época completa,
+se generan las gráficas disponibles y se escribe interrupcion.json; no se inicia
+la siguiente pérdida. No se guarda un estado de optimizador para reanudar.
 
 `comparacion.json` reúne las métricas de ambos modelos. Compara AUC, sensibilidad
 y especificidad **por paciente**; las pérdidas normal y ponderada tienen escalas
@@ -167,6 +263,9 @@ Se muestran **todas las épocas**, incluidas las posteriores a la elegida. Una
 sola época produce un punto; los valores indefinidos quedan como huecos. La AUC
 por corte y las demás métricas por época siguen en `historial.csv`; la figura
 principal se centra en la AUC por paciente, que es la unidad de evaluación.
+En v3, la figura principal también muestra la AUC de entrenamiento y utiliza
+`train_eval_loss` para comparar las pérdidas sin aumentos ni dropout. La pérdida
+durante la optimización sigue guardada en `train_loss`.
 No se suavizan ni se alteran los resultados.
 
 ROC y precisión–sensibilidad requieren ambas clases. La referencia de la segunda

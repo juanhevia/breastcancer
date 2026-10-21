@@ -1,3 +1,4 @@
+import json
 import tempfile
 import unittest
 from pathlib import Path
@@ -11,7 +12,7 @@ from torch.utils.data import TensorDataset
 from src.data import utils_caso as uc
 from src.data.aumentos import AumentosDCE
 from src.training.entrenar import entrenar
-from src.models.modelo import BreastCNN, BreastCNNV2, contar_parametros
+from src.models.modelo import BreastCNN, BreastCNNV2, BreastCNNV3, RealceDCE, contar_parametros
 
 
 class EntrenamientoTests(unittest.TestCase):
@@ -65,6 +66,69 @@ class EntrenamientoTests(unittest.TestCase):
         self.assertTrue(torch.allclose(aumentado[2], aumentado[0] * 3, atol=1e-6))
         self.assertGreaterEqual(aumentado.min().item(), 0)
         self.assertLessEqual(aumentado.max().item(), 1)
+
+    def test_v3_conserva_fases_y_cambios_negativos(self):
+        x = torch.tensor([0., .8, .3]).reshape(1, 3, 1, 1).expand(1, 3, 32, 32)
+        realce = RealceDCE()(x)
+        self.assertTrue(torch.allclose(realce[:, 2], torch.full((1, 32, 32), -.5)))
+        self.assertTrue(torch.allclose(realce.cumsum(dim=1), x))
+        self.assertTrue(torch.isfinite(RealceDCE()(torch.zeros_like(x))).all())
+
+    def test_v3_gradientes_y_pesos_recargables(self):
+        modelo = BreastCNNV3()
+        x = torch.rand(1, 3, 256, 256)
+        logits = modelo(x)
+        self.assertEqual(tuple(logits.shape), (1,))
+        torch.nn.BCEWithLogitsLoss()(logits, torch.ones(1)).backward()
+        for parametro in modelo.parameters():
+            self.assertIsNotNone(parametro.grad)
+            self.assertTrue(torch.isfinite(parametro.grad).all())
+        self.assertLess(contar_parametros(modelo)[0], contar_parametros(BreastCNNV2())[0])
+        restaurado = BreastCNNV3()
+        restaurado.load_state_dict(modelo.state_dict())
+        modelo.eval()
+        restaurado.eval()
+        with torch.no_grad():
+            self.assertTrue(torch.equal(modelo(x), restaurado(x)))
+
+    def test_auc_train_corresponde_a_pesos_elegidos_sin_dropout(self):
+        torch.manual_seed(3)
+        x = torch.tensor([[0., 0.], [0., 1.], [1., 0.], [1., 1.]])
+        y = torch.tensor([0., 0., 1., 1.])
+        ds = TensorDataset(x, y)
+        tr = pd.DataFrame({"sample_id": list("abcd"), "patient_id": list("abcd"), "pCR": y.numpy()})
+        va = tr.assign(sample_id=list("efgh"), patient_id=list("efgh"))
+        modelo = torch.nn.Sequential(torch.nn.Dropout(.8), torch.nn.Linear(2, 1), torch.nn.Flatten(0))
+        with tempfile.TemporaryDirectory() as tmp:
+            hist, _, epoca, res = entrenar(
+                modelo, ds, ds, va, epocas=3, batch_size=2, dispositivo="cpu", salida=tmp,
+                train_eval_ds=ds, train_samples=tr, seleccion="auc",
+            )
+            self.assertFalse(modelo.training)
+            with torch.no_grad():
+                logits = modelo(x)
+                probs = torch.sigmoid(logits).numpy()
+                loss = torch.nn.BCEWithLogitsLoss()(logits, y).item()
+            guardado = pd.read_csv(Path(tmp) / "predicciones_entrenamiento.csv")
+            np.testing.assert_allclose(guardado.probabilidad, probs, rtol=1e-6)
+            esperado = uc.evaluar_por_paciente(probs, tr)
+            metricas = json.loads((Path(tmp) / "metricas.json").read_text())
+            self.assertEqual(metricas["entrenamiento"]["auc"], esperado["auc"])
+            self.assertAlmostEqual(metricas["train_eval_loss"], loss, places=6)
+            self.assertAlmostEqual(metricas["brecha_auc"], esperado["auc"] - res["auc"])
+            self.assertEqual(hist["train_auc_paciente"][epoca-1], esperado["auc"])
+            for valores in hist.values():
+                self.assertEqual(len(valores), 3)
+
+    def test_diagnostico_train_rechaza_fuga_y_aumentos(self):
+        ds = TensorDataset(torch.zeros(2, 2), torch.tensor([0., 1.]))
+        tr = pd.DataFrame({"sample_id": ["a", "b"], "patient_id": ["a", "b"], "pCR": [0, 1]})
+        with self.assertRaisesRegex(ValueError, "compartidas"):
+            entrenar(torch.nn.Linear(2, 1), ds, ds, tr, train_eval_ds=ds, train_samples=tr)
+        va = tr.assign(sample_id=["c", "d"], patient_id=["c", "d"])
+        ds.transform = lambda x: x
+        with self.assertRaisesRegex(ValueError, "sin aumentos"):
+            entrenar(torch.nn.Linear(2, 1), ds, ds, va, train_eval_ds=ds, train_samples=tr)
 
     def test_auc_selecciona_pesos_y_reduce_lr_antes_de_parar(self):
         torch.manual_seed(9)
