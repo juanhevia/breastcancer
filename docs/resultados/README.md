@@ -36,7 +36,13 @@ No se incluyen pesos `.pt`, imágenes médicas, particiones ni predicciones indi
 Este archivo sirve para revisar resultados; no permite reanudar un entrenamiento.
 Las ejecuciones sin `ejecucion.json` se señalan como «sin cierre registrado», sin inferir
 que acabaran correctamente. No se han reconstruido métricas ni curvas ROC ausentes.
-V5 conserva tres épocas y su mejor validación, pero no llegó a exportar las gráficas finales.
+V5 conserva tres épocas y su mejor validación, pero no llegó a exportar predicciones finales.
+
+Se han regenerado las figuras disponibles de v3, v4, v5 y la referencia v2 en
+`graficas/normal/` y `graficas/ponderada/`, una gráfica por archivo, en PNG y PDF.
+Los paneles anteriores se conservan en `graficas/formato_anterior/`.
+Sin predicciones guardadas solo se pueden rehacer pérdida y AUC por época;
+esto ocurre en v5, v4 ponderada y la copia local de la referencia v2.
 
 Es una instantánea: los entrenamientos futuros no se publican automáticamente.
 Para consultarla desde el laboratorio, actualizar el repositorio con `git pull --ff-only`.

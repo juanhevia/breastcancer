@@ -280,9 +280,19 @@ def entrenar(
         if not math.isfinite(valor):
             raise RuntimeError("La métrica de selección no es finita.")
         mejora = valor > mejor_valor if seleccion == "auc" else valor < mejor_valor
+        # Cada archivo conserva los pesos de esa época, aunque no sea la mejor.
+        estado_epoca = ({k: v.detach().cpu().clone() for k, v in modelo.state_dict().items()}
+                        if salida or mejora else None)
+        if salida:
+            carpeta_epocas = salida / "epocas"
+            carpeta_epocas.mkdir(exist_ok=True)
+            destino = carpeta_epocas / f"epoca_{epoca:03d}.pt"
+            temporal = destino.with_suffix(".pt.tmp")
+            torch.save(estado_epoca, temporal)
+            temporal.replace(destino)
         if mejora:
             mejor_valor, mejor_epoca = valor, epoca
-            mejor_state = {k: v.detach().cpu().clone() for k, v in modelo.state_dict().items()}
+            mejor_state = estado_epoca
             mejor_train = ({"metricas": res_train, "loss": train_eval_loss} if res_train is not None else None)
             if salida:
                 torch.save(mejor_state, salida / "mejor_modelo.pt")
@@ -435,6 +445,7 @@ def main():
         salida.mkdir()
         config = {k: str(v) if isinstance(v, Path) else v for k, v in vars(args).items()}
         config.update(dispositivo=dispositivo, perdida=perdida, pos_weight=pw,
+                      guardado_pesos="state_dict en CPU por época: epocas/epoca_NNN.pt; además mejor_modelo.pt",
                       python=platform.python_version(), torch=torch.__version__,
                       numpy=np.__version__, pandas=pd.__version__,
                       sistema=platform.platform(), arquitectura=str(modelo),
@@ -510,7 +521,7 @@ def main():
             "nota_memoria": "Pico CUDA registrado; pico de memoria CPU/MPS no medido",
         })
         from src.training.graficas import generar_graficas
-        # Actualiza las mismas tres figuras al terminar cada modelo.
+        # Exporta figuras individuales para presentación al terminar cada modelo.
         generar_graficas(carpeta)
         resumen.append({"perdida": perdida, "mejor_epoca": epoca, **res})
         guardar_json(carpeta / "comparacion.json", resumen)

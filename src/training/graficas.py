@@ -1,4 +1,4 @@
-"""Tres figuras para entender el entrenamiento y su validación interna.
+"""Figuras individuales para presentar el entrenamiento y su validación interna.
 
 Uso: python -m src.training.graficas models/<ejecucion> [--detalle]
 """
@@ -22,10 +22,14 @@ from sklearn.metrics import (
 from src.data import utils_caso as uc
 
 
-PRINCIPALES = (
+COMPUESTAS_ANTIGUAS = (
     "01_evolucion_del_aprendizaje.png",
     "02_capacidad_para_distinguir_pcr.png",
     "03_aciertos_y_errores.png",
+)
+PRINCIPALES = (
+    "01_perdida.png", "02_auc_por_epoca.png", "03_roc.png",
+    "04_precision_sensibilidad.png", "05_matriz_confusion.png",
 )
 NOMBRES = {"normal": "BCE normal", "ponderada": "BCE ponderada"}
 METRICAS = {
@@ -274,99 +278,212 @@ def dibujar_detalle(r, ruta):
 
 def cargar_registros(carpeta):
     carpeta = Path(carpeta)
-    origenes = ([carpeta] if (carpeta / "predicciones_validacion.csv").is_file() else
+    origenes = ([carpeta] if (carpeta / "historial.csv").is_file() else
                 [c for c in (carpeta / "normal", carpeta / "ponderada")
-                 if (c / "predicciones_validacion.csv").is_file()])
+                 if (c / "historial.csv").is_file()])
     if not origenes:
-        raise ValueError("No se encontraron predicciones de validación en esa carpeta.")
+        raise ValueError("No se encontraron historiales de entrenamiento en esa carpeta.")
     registros = []
     for origen in origenes:
         config = json.loads((origen / "configuracion.json").read_text())
-        metricas = json.loads((origen / "metricas.json").read_text())
-        tabla = preparar_pacientes(pd.read_csv(origen / "predicciones_validacion.csv"),
-                                  metodo=metricas["metodo"], umbral=metricas["umbral"])
+        ruta_metricas = origen / "metricas.json"
+        if not ruta_metricas.exists():
+            ruta_metricas = origen / "mejor_validacion.json"
+        metricas = json.loads(ruta_metricas.read_text()) if ruta_metricas.exists() else {}
+        metricas.setdefault("mejor_epoca", metricas.get("epoca"))
+        metricas.setdefault("umbral", config.get("umbral", .5))
+        metricas.setdefault("metodo", config.get("agregacion", "mean"))
+        predicciones = origen / "predicciones_validacion.csv"
+        tabla = (preparar_pacientes(pd.read_csv(predicciones),
+                                   metodo=metricas["metodo"], umbral=metricas["umbral"])
+                 if predicciones.exists() else None)
         nombre = config.get("perdida", origen.name)
         registros.append(dict(origen=origen, config=config, metricas=metricas, tabla=tabla,
                                nombre=NOMBRES.get(nombre, nombre),
                                historial=pd.read_csv(origen / "historial.csv"),
-                               umbrales=calcular_umbrales(tabla, metricas["umbral"])))
-    if any(not r["tabla"].pCR.equals(registros[0]["tabla"].pCR) for r in registros[1:]):
+                               umbrales=calcular_umbrales(tabla, metricas["umbral"]) if tabla is not None else None))
+    con_predicciones = [r for r in registros if r["tabla"] is not None]
+    if any(not r["tabla"].pCR.equals(con_predicciones[0]["tabla"].pCR) for r in con_predicciones[1:]):
         raise ValueError("No se pueden comparar pérdidas con pacientes o etiquetas diferentes.")
     return registros
 
 
+def figura_individual(r, titulo, xlabel, ylabel):
+    fig, eje = plt.subplots(figsize=(8, 5), layout="constrained")
+    contexto = "Prueba reducida" if r["config"].get("prueba") else "Validación interna"
+    eje.set(title=f"{titulo} · {r['nombre']}\n{contexto}", xlabel=xlabel, ylabel=ylabel)
+    eje.title.set_fontsize(14)
+    eje.tick_params(labelsize=11)
+    eje.xaxis.label.set_size(12)
+    eje.yaxis.label.set_size(12)
+    eje.spines[["top", "right"]].set_visible(False)
+    eje.grid(alpha=.18)
+    return fig, eje
+
+
+def guardar_presentacion(fig, ruta):
+    """PNG para diapositivas y PDF vectorial; una sola gráfica en cada archivo."""
+    ruta = Path(ruta)
+    if fig.axes[0].get_legend_handles_labels()[0]:
+        fig.axes[0].legend(fontsize=10)
+    fig.savefig(ruta.with_suffix(".pdf"), bbox_inches="tight")
+    fig.savefig(ruta, dpi=300, bbox_inches="tight", facecolor="white")
+    plt.close(fig)
+
+
+def marcar_epoca(eje, r):
+    configurar_epocas(eje, r["historial"]["epoca"])
+    epoca = r["metricas"].get("mejor_epoca")
+    if epoca is not None:
+        eje.axvline(epoca, color=".5", ls="--", lw=1, label=f"Época elegida: {epoca}")
+
+
+def dibujar_presentacion(r, salida, detalle=False):
+    salida.mkdir(parents=True, exist_ok=True)
+    hist, tabla = r["historial"], r["tabla"]
+    unidad = r["config"].get("unidad_perdidas_historial", "corte")
+    fig, eje = figura_individual(r, "Pérdida por época", "Época", f"Pérdida BCE por {unidad}")
+    comparable = "train_eval_loss" in hist
+    eje.plot(hist.epoca, hist.train_eval_loss if comparable else hist.train_loss,
+             "o-", ms=3, label="Entrenamiento (evaluación)" if comparable else "Entrenamiento", color="#2271B2")
+    eje.plot(hist.epoca, hist.val_loss, "o-", ms=3, label="Validación", color="#D55E00")
+    marcar_epoca(eje, r)
+    guardar_presentacion(fig, salida / PRINCIPALES[0])
+    fig, eje = figura_individual(r, "AUC por época", "Época", "ROC-AUC por paciente")
+    if "train_auc_paciente" in hist:
+        eje.plot(hist.epoca, hist.train_auc_paciente, "o-", ms=3, label="Entrenamiento", color="#2271B2")
+    eje.plot(hist.epoca, hist.val_auc_paciente, "o-", ms=3, label="Validación", color="#D55E00")
+    eje.axhline(.5, ls=":", color=".5", label="Azar: 0,50")
+    eje.set_ylim(0, 1.02)
+    marcar_epoca(eje, r)
+    guardar_presentacion(fig, salida / PRINCIPALES[1])
+    if tabla is None:
+        return
+    curvas = datos_curvas(tabla)
+    for indice, titulo, xlabel, ylabel in (
+        (2, "Curva ROC por paciente", "1 − especificidad", "Sensibilidad"),
+        (3, "Precisión–sensibilidad por paciente", "Sensibilidad (recall)", "Precisión (VPP)"),
+    ):
+        fig, eje = figura_individual(r, titulo, xlabel, ylabel)
+        if curvas is None:
+            eje.text(.5, .5, "No estimable: solo hay una clase", ha="center", transform=eje.transAxes)
+        elif indice == 2:
+            eje.plot(curvas["fpr"], curvas["tpr"], lw=2, color="#2271B2", label=f"AUC = {curvas['auc']:.3f}")
+            eje.plot([0, 1], [0, 1], "--", color=".5", label="Azar")
+        else:
+            eje.step(curvas["recall"], curvas["precision"], where="post", lw=2,
+                     color="#2271B2", label=f"AP = {curvas['ap']:.3f}")
+            eje.axhline(tabla.pCR.mean(), ls="--", color=".5", label=f"Prevalencia: {tabla.pCR.mean():.1%}")
+        eje.set(xlim=(-.02, 1.02), ylim=(-.02, 1.02))
+        guardar_presentacion(fig, salida / PRINCIPALES[indice])
+    fig, eje = figura_individual(r, "Matriz de confusión por paciente", "Predicción", "Resultado real")
+    matriz = confusion_matrix(tabla.pCR, tabla.prediccion, labels=[0, 1])
+    totales = matriz.sum(axis=1, keepdims=True)
+    porcentajes = np.divide(matriz, totales, out=np.full((2, 2), np.nan), where=totales != 0)
+    eje.grid(False)
+    eje.imshow(np.ma.masked_invalid(porcentajes), cmap="Blues", vmin=0, vmax=1)
+    for i in range(2):
+        for j in range(2):
+            porcentaje = f"{porcentajes[i,j]:.1%}" if totales[i,0] else "—"
+            eje.text(j, i, f"{matriz[i,j]}\n({porcentaje})", ha="center", va="center", fontsize=18,
+                     color="white" if porcentajes[i,j] > .5 else "black")
+    eje.set(xticks=[0, 1], yticks=[0, 1], xticklabels=["Sin pCR", "Con pCR"], yticklabels=["Sin pCR", "Con pCR"],
+            xlabel=f"Predicción · umbral {r['metricas']['umbral']:g}", ylabel="Resultado real · % por fila")
+    guardar_presentacion(fig, salida / PRINCIPALES[4])
+    if detalle:
+        dibujar_detalle_individual(r, salida / "detalle")
+
+
+def dibujar_detalle_individual(r, salida):
+    salida.mkdir(exist_ok=True)
+    tabla, hist = r["tabla"], r["historial"]
+    y, prob = tabla.pCR.to_numpy(), tabla.prob.to_numpy()
+    umbral = r["metricas"]["umbral"]
+    fig, eje = figura_individual(r, "Calibración por paciente", "Puntuación media", "Fracción con pCR")
+    observada, predicha = calibration_curve(y, prob, n_bins=10, strategy="uniform")
+    eje.plot([0, 1], [0, 1], "--", color=".5", label="Ideal")
+    eje.plot(predicha, observada, "o-", label=f"Brier = {brier_score_loss(y, prob):.3f}")
+    eje.set(xlim=(0, 1), ylim=(0, 1))
+    guardar_presentacion(fig, salida / "06_calibracion.png")
+    fig, eje = figura_individual(r, "Efecto del umbral", "Umbral", "Proporción")
+    for clave in ("sensibilidad", "especificidad", "precision"):
+        eje.plot(r["umbrales"].umbral, r["umbrales"][clave], label=clave.capitalize())
+    eje.axvline(umbral, ls="--", color=".5", label=f"Umbral: {umbral:g}")
+    eje.set_ylim(0, 1.02)
+    guardar_presentacion(fig, salida / "07_umbral.png")
+    fig, eje = figura_individual(r, "Puntuaciones por clase", "Puntuación por paciente", "Pacientes")
+    for clase, nombre in ((0, "Sin pCR"), (1, "Con pCR")):
+        eje.hist(prob[y == clase], bins=np.linspace(0, 1, 11), alpha=.6, label=nombre)
+    eje.axvline(umbral, ls="--", color=".5", label=f"Umbral: {umbral:g}")
+    eje.yaxis.set_major_locator(MaxNLocator(integer=True))
+    guardar_presentacion(fig, salida / "08_puntuaciones.png")
+    fig, eje = figura_individual(r, "Métricas por época", "Época", "Proporción")
+    for clave, nombre in METRICAS.items():
+        if clave in hist:
+            eje.plot(hist.epoca, hist[clave], label=nombre)
+    eje.set_ylim(0, 1.02)
+    marcar_epoca(eje, r)
+    guardar_presentacion(fig, salida / "09_metricas.png")
+
+
 def generar_graficas(carpeta, detalle=False):
-    """Tres figuras compartidas por ejecución; los CSV completos se conservan."""
+    """Cinco figuras independientes por pérdida, en PNG y PDF."""
     carpeta = Path(carpeta)
     registros = cargar_registros(carpeta)
     salida = carpeta / "graficas"
     salida.mkdir(exist_ok=True)
+    # Preserva los antiguos paneles, fuera de las carpetas para presentación.
+    for nombre in COMPUESTAS_ANTIGUAS:
+        anterior = salida / nombre
+        if anterior.exists():
+            archivo = salida / "formato_anterior"
+            archivo.mkdir(exist_ok=True)
+            destino = archivo / nombre
+            if not destino.exists():
+                anterior.rename(destino)
+    lineas = ["# Gráficas para presentación", "", titulo_general(registros), "", DEFINICION, "",
+              "Cada pérdida tiene su carpeta: normal/ o ponderada/. Cada figura tiene PNG a 300 dpi y PDF vectorial.",
+              "Las explicaciones se conservan aquí para dejar las diapositivas despejadas.", "",
+              "- 01_perdida: todas las épocas; train_eval_loss si existe (sin aumentos/dropout), si no train_loss de optimización.",
+              "- 02_auc_por_epoca: AUC por paciente en todas las épocas; train solo cuando se registró. Línea vertical: época elegida.",
+              "- 03_roc y 04_precision_sensibilidad: validación del mejor modelo; recorren umbrales, no épocas. AP no es área trapezoidal.",
+              "- 05_matriz_confusion: pacientes; porcentaje dentro de cada clase real (fila).",
+              "Las pérdidas normal/ponderada no tienen la misma escala. No se suavizan las curvas.",
+              "Si faltan predicciones, solo se generan pérdida y AUC; no se inventan curvas ROC.", "",
+              "## Procedencia de las figuras", ""]
     for r in registros:
-        r["tabla"].to_csv(r["origen"] / "predicciones_pacientes.csv")
-        r["umbrales"].to_csv(r["origen"] / "metricas_umbrales.csv", index=False)
-    dibujar_evolucion(registros, salida / PRINCIPALES[0])
-    dibujar_discriminacion(registros, salida / PRINCIPALES[1])
-    dibujar_aciertos(registros, salida / PRINCIPALES[2])
-    if detalle:
-        adicionales = salida / "detalle"
-        adicionales.mkdir(exist_ok=True)
-        for r in registros:
-            dibujar_detalle(r, adicionales / f"{r['origen'].name}_diagnostico.png")
-    lineas = ["# Cómo leer estas tres figuras", "", titulo_general(registros), "", DEFINICION, "",
-              "1. **Evolución del aprendizaje:** pérdida (unidad indicada en el eje) y AUC por paciente durante TODAS las épocas. "
-              "La línea vertical identifica los pesos elegidos. Menor pérdida y mayor AUC son preferibles; "
-              "sus evoluciones no tienen por qué coincidir. Las BCE normal y ponderada no comparten escala.", "",
-              "2. **Capacidad para distinguir pCR:** ROC y precisión–sensibilidad de la época elegida. "
-              "Cada curva recorre umbrales, no épocas. AUC resume la ROC; AP es average precision, "
-              "no el área trapezoidal. La referencia de precisión es la proporción real de pCR.", "",
-              "3. **Aciertos y errores:** recuentos por paciente con el umbral indicado. Cada fila corresponde "
-              "a una clase real y sus porcentajes suman el 100 %. Cambiar el umbral cambia estos aciertos y errores; "
-              "no cambia la ROC-AUC de las puntuaciones ya calculadas.", "",
-              "Sensibilidad: proporción de pCR reales detectadas. Especificidad: proporción de pacientes sin pCR "
-              "identificadas como tales. Precisión (VPP): proporción de predicciones de pCR que son correctas.", "",
-              "## Modelos incluidos", ""]
-    for r in registros:
+        if r["tabla"] is not None:
+            r["tabla"].to_csv(r["origen"] / "predicciones_pacientes.csv")
+            r["umbrales"].to_csv(r["origen"] / "metricas_umbrales.csv", index=False)
+        dibujar_presentacion(r, salida / r["origen"].name, detalle)
         m = r["metricas"]
-        lineas.append(f"- {r['nombre']}: {len(r['tabla'])} pacientes; agregación `{m['metodo']}`; "
-                      f"época {m['mejor_epoca']} elegida por {criterio_seleccion(r)}; umbral {m['umbral']:g}.")
-        unidad = r["config"].get("unidad_perdidas_historial", "corte")
-        lineas.append(f"  Las pérdidas de entrenamiento y validación se calculan por **{unidad}**. "
-                      "No comparar directamente BCE por corte con BCE por paciente entre experimentos.")
-        if m.get("brecha_auc") is not None:
-            lineas.append(f"  AUC de entrenamiento en esa época: {m['entrenamiento']['auc']:.4f}; "
-                          f"diferencia AUC train − validación: {m['brecha_auc']:.4f}. "
-                          "Entrenamiento evaluado sin aumentos ni dropout; no interviene en la selección.")
-    lineas += ["", "Si existe train_eval_loss, la figura 1 compara las pérdidas de train y validación "
-               "medidas en modo evaluación, sin aumentos ni dropout, con los mismos pesos al final de cada época. "
-               "La columna train_loss conserva la pérdida durante la optimización. Si se registró "
-               "train_auc_paciente, se representa junto a la AUC de validación; los historiales antiguos "
-               "no permiten reconstruir esta AUC sin pesos e imágenes."]
-    lineas += ["", "Las métricas son de validación interna, usada para seleccionar el modelo; no son una evaluación en test. "
-               "Una sola época produce un punto, y una sola clase impide estimar ROC y precisión–sensibilidad.", "",
-               "Con agregación `voto`, el umbral configurado convierte primero los cortes en votos. "
-               "Las curvas posteriores recorren umbrales sobre la fracción de votos, manteniendo fijos esos votos.", "",
-               "El diagnóstico opcional (`--detalle`) reúne calibración, efecto del umbral, distribución de "
-               "puntuaciones y otras métricas por época en una hoja por modelo. Los datos numéricos completos "
-               "siguen en historial.csv, predicciones_pacientes.csv y metricas_umbrales.csv.", ""]
+        lineas.append(f"- {r['nombre']}: época elegida {m.get('mejor_epoca')}; criterio {criterio_seleccion(r)}; "
+                      f"agregación {m['metodo']}; umbral {m['umbral']:g}. "
+                      + (f"{len(r['tabla'])} pacientes." if r['tabla'] is not None else "Sin predicciones disponibles."))
+    lineas += ["", "Validación interna usada para elegir el modelo, no test. Pruebas reducidas no estiman rendimiento real.",
+               "Una sola clase impide estimar ROC/PR. Una sola época produce un punto.",
+               "Con voto, las curvas mantienen fijo el umbral de los cortes y varían el umbral sobre la fracción de votos.",
+               "--detalle exporta cuatro figuras adicionales separadas: calibración, umbral, puntuaciones y métricas por época.",
+               "Calibración agrupa puntuaciones, no épocas; no se recalibra el modelo. Las puntuaciones no garantizan probabilidades calibradas.", ""]
     (salida / "LEEME_GRAFICAS.md").write_text("\n".join(lineas))
     return registros[0]["tabla"] if len(registros) == 1 else {r["origen"].name: r["tabla"] for r in registros}
 
 
 def comparar_perdidas(carpeta):
-    """Compatibilidad: la comparación ahora forma parte de las tres figuras."""
+    """Compatibilidad: exporta las figuras de ambas pérdidas."""
     return generar_graficas(carpeta)
 
 
 def main():
     p = argparse.ArgumentParser(description=__doc__)
     p.add_argument("carpeta", type=Path, help="Carpeta de la ejecución o de un único modelo")
-    p.add_argument("--detalle", action="store_true", help="Añade una hoja de diagnóstico por modelo")
+    p.add_argument("--detalle", action="store_true", help="Añade cuatro figuras de diagnóstico por modelo")
     args = p.parse_args()
     try:
         generar_graficas(args.carpeta, detalle=args.detalle)
     except ValueError as error:
         p.error(str(error))
-    print(f"Tres figuras principales y su guía: {args.carpeta / 'graficas'}")
+    print(f"Figuras individuales PNG/PDF y su guía: {args.carpeta / 'graficas'}")
 
 
 if __name__ == "__main__":

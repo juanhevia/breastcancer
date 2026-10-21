@@ -158,6 +158,15 @@ class EntrenamientoTests(unittest.TestCase):
             self.assertEqual(len(hist["epoca"]), 8)
             self.assertEqual(hist["lr"][5], 1e-2)
             self.assertEqual(hist["lr"][6], 5e-3)
+            archivos = sorted((Path(tmp) / "epocas").glob("*.pt"))
+            self.assertEqual(len(archivos), 8)
+            for numero, archivo in enumerate(archivos):
+                self.assertEqual(archivo.name, f"epoca_{numero+1:03d}.pt")
+                pesos = torch.load(archivo, weights_only=True)
+                for clave in pesos:
+                    self.assertEqual(pesos[clave].device.type, "cpu")
+                    self.assertTrue(torch.equal(pesos[clave], pesos_epocas[numero][clave]))
+            self.assertFalse(list((Path(tmp) / "epocas").glob("*.tmp")))
             guardado = torch.load(Path(tmp) / "mejor_modelo.pt", weights_only=True)
             for k, valor in modelo.state_dict().items():
                 self.assertTrue(torch.equal(valor, pesos_epocas[1][k]))

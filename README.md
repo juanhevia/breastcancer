@@ -141,7 +141,7 @@ sin aumentos ni dropout. Así se comparan AUC y pérdidas de train y validación
 los mismos pesos. Esta evaluación tarda un tiempo adicional y puede activarse
 también para v2 con `--evaluar-train`.
 
-Se mantienen tres figuras principales; la primera incorpora ambas AUC. Los
+Se exportan figuras individuales; la de AUC incorpora entrenamiento y validación. Los
 resultados van a `models/<fecha_hora>_v3/`, sin sustituir los anteriores.
 Consulta la [arquitectura, justificación y límites de v3](docs/experimento_v3.md).
 
@@ -164,7 +164,7 @@ Entrena **normal y después ponderada**, hasta 40 épocas cada una y parada tras
 12 sin mejorar. El entrenamiento usa 2 pacientes completas por paso; batch-size
 solo controla el lote de evaluación en este modo. La ponderación se calcula
 con las pacientes de train. Se guardan ambas AUC y pérdidas por paciente en
-todas las épocas, además de las tres figuras habituales. Los resultados van
+todas las épocas, además de las figuras individuales. Los resultados van
 a `models/<fecha_hora>_v4/`. En el laboratorio, tras sincronizar el código,
 usar `python` del entorno `cancer` y `--dispositivo cuda`.
 
@@ -244,71 +244,74 @@ y especificidad **por paciente**; las pérdidas normal y ponderada tienen escala
 distintas. El umbral 0.5 es inicial, no está optimizado ni implica calibración.
 Las métricas indefinidas aparecen como `null` en JSON.
 
-### Tres figuras principales, sin duplicados por modelo
+### Gráficas individuales para la presentación
 
-Cada ejecución crea una carpeta **`models/<ejecucion>/graficas/`** con tres
-figuras. Si entrenas normal y ponderada, ambas aparecen en las mismas figuras:
+Cada ejecución crea `models/<ejecucion>/graficas/normal/` y, cuando corresponde,
+`graficas/ponderada/`. Cada archivo contiene **una sola gráfica**, con título,
+ejes y leyenda breve. Se exporta en **PNG a 300 dpi** y **PDF vectorial**.
 
-| Archivo | Qué explica | Cómo se lee |
-|---|---|---|
-| `01_evolucion_del_aprendizaje.png` | Pérdida de entrenamiento/validación y AUC por paciente durante todas las épocas | Menor pérdida y mayor AUC son preferibles; la línea vertical indica la época elegida. Cada pérdida tiene su propia fila. |
-| `02_capacidad_para_distinguir_pcr.png` | ROC y precisión–sensibilidad de los modelos elegidos | Compara normal y ponderada en las mismas pacientes. Estas curvas recorren umbrales, no épocas. |
-| `03_aciertos_y_errores.png` | Pacientes bien y mal clasificadas con el umbral configurado | Filas: resultado real; columnas: predicción. Incluye nombres de los errores, recuentos y porcentajes dentro de cada clase real. |
+| Archivo (PNG y PDF) | Contenido |
+|---|---|
+| `01_perdida` | Pérdida de entrenamiento y validación durante todas las épocas. |
+| `02_auc_por_epoca` | ROC-AUC por paciente durante todas las épocas; train cuando se registró. |
+| `03_roc` | ROC de validación del mejor modelo y su AUC. |
+| `04_precision_sensibilidad` | Precisión–sensibilidad del mejor modelo y AP. |
+| `05_matriz_confusion` | Recuentos de pacientes y porcentajes por fila, con umbral indicado. |
 
-En las figuras, **pCR significa respuesta patológica completa**. Una predicción
-de pCR no significa una predicción de presencia de cáncer. Los títulos, ejes y
-notas explican qué se mide y cómo interpretarlo. `LEEME_GRAFICAS.md` acompaña las
-imágenes y registra qué época, criterio, agregación y umbral se usaron.
+La línea vertical en las curvas por época señala el mejor modelo, sin ocultar
+las otras épocas. Se usa `train_eval_loss` cuando existe para comparar pérdidas
+sin aumentos ni dropout; en historiales antiguos se usa la pérdida de optimización.
+No se suavizan los resultados. Las pérdidas normal y ponderada tienen escalas distintas.
 
-Las figuras se actualizan automáticamente al terminar **cada pérdida**. Mientras
-solo ha terminado la normal, muestran ese modelo; cuando termina la ponderada,
-las mismas tres figuras incluyen ambos. No se crea otra copia por cada métrica.
+Las explicaciones, la época elegida, el criterio, la agregación y el umbral se
+guardan en `graficas/LEEME_GRAFICAS.md`. Las figuras indican validación interna;
+las pruebas cortas llevan «Prueba reducida». No son resultados de test.
 
-Se muestran **todas las épocas**, incluidas las posteriores a la elegida. Una
-sola época produce un punto; los valores indefinidos quedan como huecos. La AUC
-por corte y las demás métricas por época siguen en `historial.csv`; la figura
-principal se centra en la AUC por paciente, que es la unidad de evaluación.
-En v3, la figura principal también muestra la AUC de entrenamiento y utiliza
-`train_eval_loss` para comparar las pérdidas sin aumentos ni dropout. La pérdida
-durante la optimización sigue guardada en `train_loss`.
-No se suavizan ni se alteran los resultados.
-
-ROC y precisión–sensibilidad requieren ambas clases. La referencia de la segunda
-es la proporción real de pCR. AP es average precision, no el área trapezoidal.
-Las figuras usan validación interna, no test. En modo `--prueba` llevan un aviso
-visible de que el subconjunto no estima el rendimiento real.
-
-### Regenerar las figuras sin entrenar
-
-Desde la raíz del proyecto, indica la carpeta que contiene `normal/` y
-`ponderada/` para obtener el informe conjunto:
+Se generan al terminar cada pérdida o al interrumpir con Ctrl+C tras una época
+completa. Para regenerarlas sin entrenar:
 
 ```bash
 python -m src.training.graficas models/NOMBRE_DE_LA_EJECUCION
 ```
 
-También admite una subcarpeta `normal` o `ponderada` para un informe de un único
-modelo. Se necesitan `configuracion.json`, `metricas.json`, `historial.csv` y
-`predicciones_validacion.csv`. Se actualizan las figuras y los CSV derivados;
-los pesos y datos originales se conservan. Las imágenes de versiones anteriores
-permanecen donde estaban; el informe nuevo está dentro de `graficas/`.
+También se admite una carpeta `normal/` o `ponderada/`. Con configuración e
+historial se pueden rehacer pérdida y AUC. ROC, precisión–sensibilidad y matriz
+requieren además las predicciones de validación y sus métricas. No se reconstruyen
+predicciones ausentes. Los tres paneles antiguos, si existen en `graficas/`, se
+conservan en `graficas/formato_anterior/`.
 
-### Diagnósticos adicionales, solo si los necesitas
+Para diagnósticos adicionales:
 
 ```bash
 python -m src.training.graficas models/NOMBRE_DE_LA_EJECUCION --detalle
 ```
 
-Añade **una hoja por modelo** dentro de `graficas/detalle/`, con cuatro paneles:
-calibración, efecto del umbral, distribución de puntuaciones y otras métricas
-por época. Son 3 figuras principales más 2 hojas adicionales si hay dos modelos.
-Si un historial antiguo no contiene las métricas por época, ese panel lo indica.
+Añade cuatro gráficas separadas en la subcarpeta `detalle/` de cada pérdida:
+calibración, efecto del umbral, distribución de puntuaciones y métricas por época.
+La calibración agrupa puntuaciones, no épocas; no recalibra el modelo.
 
-La calibración usa intervalos de puntuaciones; pocos puntos significan pocos
-intervalos ocupados, no pocas épocas. No recalibra el modelo. Las puntuaciones
-no garantizan probabilidades calibradas, especialmente con BCE ponderada o
-agregación por voto. Con `voto`, las curvas de umbral mantienen fijo el umbral que
-convierte cada corte en voto y varían el umbral sobre la fracción de votos.
+### Pesos de todas las épocas
+
+Desde esta versión, cada época completada guarda sus pesos en:
+
+```text
+models/<ejecucion>/normal/epocas/epoca_001.pt
+models/<ejecucion>/normal/epocas/epoca_002.pt
+...
+models/<ejecucion>/ponderada/epocas/epoca_001.pt
+```
+
+`mejor_modelo.pt` se conserva por separado. Cada `.pt` es un `state_dict` en CPU,
+compatible con `modelo.load_state_dict(torch.load(ruta, map_location="cpu", weights_only=True))`
+tras crear la arquitectura indicada en `configuracion.json`. Las métricas de cada
+época están en `historial.csv`. Estos archivos guardan pesos, no el estado completo
+del optimizador para reanudar exactamente un entrenamiento.
+
+Se aplica a **nuevos procesos de entrenamiento**. Actualizar el repositorio no
+modifica uno que ya está ejecutándose. No es posible recuperar pesos de épocas
+antiguas que nunca se guardaron. Los `.pt` siguen excluidos de GitHub y se conservan
+en el ordenador donde se entrena. Para v2, 80 épocas guardadas (40 por pérdida)
+ocupan aproximadamente 100 MB de pesos, además de los mejores modelos.
 
 Para el laboratorio con Conda y ROCm, activa `cancer` y conserva tu instalación
 funcional de PyTorch. Las gráficas y el experimento v2 no necesitan reinstalar

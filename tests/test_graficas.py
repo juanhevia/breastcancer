@@ -10,7 +10,7 @@ from PIL import Image
 
 from src.training.graficas import (
     comparar_perdidas, datos_curvas, dibujar_curvas, generar_graficas,
-    guardar, preparar_pacientes, PRINCIPALES,
+    guardar, guardar_presentacion, preparar_pacientes, PRINCIPALES,
 )
 
 
@@ -74,6 +74,38 @@ class GraficasTests(unittest.TestCase):
         np.testing.assert_array_equal(lineas["AUC en entrenamiento por paciente"], hist["train_auc_paciente"])
         np.testing.assert_array_equal(lineas["AUC en validación por paciente"], hist["val_auc_paciente"])
 
+    def test_presentacion_una_grafica_por_archivo_con_todas_las_epocas(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            raiz = Path(tmp)
+            self.preparar_carpeta(raiz / "normal")
+            hist = pd.DataFrame(dict(epoca=[1, 2, 3], train_loss=[.8, .6, .4],
+                                     val_loss=[.7, .5, .6], val_auc_paciente=[.5, .7, .6]))
+            hist.to_csv(raiz / "normal" / "historial.csv", index=False)
+            vistas = []
+
+            def inspeccionar(fig, ruta):
+                self.assertEqual(len(fig.axes), 1)
+                self.assertEqual(len(fig.texts), 0)
+                self.assertIn("Prueba reducida", fig.axes[0].get_title())
+                if Path(ruta).name in PRINCIPALES[:2]:
+                    curva = fig.axes[0].lines[0]
+                    np.testing.assert_array_equal(curva.get_xdata(), [1, 2, 3])
+                vistas.append(Path(ruta).name)
+                guardar_presentacion(fig, ruta)
+
+            with patch("src.training.graficas.guardar_presentacion", side_effect=inspeccionar):
+                generar_graficas(raiz)
+            self.assertEqual(vistas, list(PRINCIPALES))
+
+    def test_historial_sin_predicciones_solo_produce_perdida_y_auc(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            raiz = Path(tmp)
+            self.preparar_carpeta(raiz / "normal")
+            (raiz / "normal" / "predicciones_validacion.csv").unlink()
+            (raiz / "normal" / "metricas.json").rename(raiz / "normal" / "mejor_validacion.json")
+            generar_graficas(raiz)
+            self.assertEqual(sorted(p.name for p in raiz.rglob("*.png")), list(PRINCIPALES[:2]))
+
     def predicciones(self):
         # Distinto número de cortes por paciente: el AUC debe pesar pacientes.
         return pd.DataFrame({
@@ -112,9 +144,10 @@ class GraficasTests(unittest.TestCase):
                 carpeta = raiz / nombre
                 self.preparar_carpeta(carpeta, nombre)
             comparar_perdidas(raiz)
-            with Image.open(raiz / "graficas" / PRINCIPALES[1]) as imagen:
+            with Image.open(raiz / "graficas" / "normal" / PRINCIPALES[1]) as imagen:
                 imagen.verify()
-            self.assertEqual(len(list(raiz.rglob("*.png"))), 3)
+            self.assertEqual(len(list(raiz.rglob("*.png"))), 10)
+            self.assertEqual(len(list(raiz.rglob("*.pdf"))), 10)
             self.assertFalse((raiz / "graficas" / "detalle").exists())
             distintas = self.predicciones().replace({"patient_id": {"d": "otra"}})
             distintas.to_csv(raiz / "ponderada" / "predicciones_validacion.csv", index=False)
@@ -133,7 +166,7 @@ class GraficasTests(unittest.TestCase):
                 originales = {p: p.read_bytes() for p in carpeta.iterdir()}
                 tabla = generar_graficas(carpeta)
                 for nombre in PRINCIPALES:
-                    with Image.open(carpeta / "graficas" / nombre) as im:
+                    with Image.open(carpeta / "graficas" / carpeta.name / nombre) as im:
                         im.verify()
                 for p, contenido in originales.items():
                     self.assertEqual(p.read_bytes(), contenido)
@@ -156,29 +189,28 @@ class GraficasTests(unittest.TestCase):
             inspecciones = []
 
             def inspeccionar(fig, ruta):
-                if Path(ruta).name == PRINCIPALES[2]:
+                if Path(ruta).name == PRINCIPALES[4]:
                     eje = fig.axes[0]
                     np.testing.assert_allclose(eje.images[0].get_array(), [[2/3, 1/3], [0, 1]])
                     textos = "\n".join(t.get_text() for t in eje.texts)
-                    self.assertIn("2 pacientes", textos)
-                    self.assertIn("66.7% de esta fila", textos)
-                    self.assertIn("Error: falsa pCR", textos)
+                    self.assertIn("2\n(66.7%)", textos)
+                    self.assertIn("% por fila", eje.get_ylabel())
                     inspecciones.append(True)
-                guardar(fig, ruta)
+                guardar_presentacion(fig, ruta)
 
-            with patch("src.training.graficas.guardar", side_effect=inspeccionar):
+            with patch("src.training.graficas.guardar_presentacion", side_effect=inspeccionar):
                 generar_graficas(carpeta)
             self.assertEqual(inspecciones, [True])
 
-    def test_detalle_es_una_hoja_opcional_por_modelo(self):
+    def test_detalle_genera_graficas_individuales_por_modelo(self):
         with tempfile.TemporaryDirectory() as tmp:
             raiz = Path(tmp)
             for nombre in ("normal", "ponderada"):
                 self.preparar_carpeta(raiz / nombre, nombre)
             generar_graficas(raiz, detalle=True)
-            self.assertEqual(len(list((raiz / "graficas").glob("*.png"))), 3)
-            detalles = list((raiz / "graficas" / "detalle").glob("*.png"))
-            self.assertEqual(len(detalles), 2)
+            self.assertEqual(len(list((raiz / "graficas").glob("*/*.png"))), 10)
+            detalles = list((raiz / "graficas").glob("*/detalle/*.png"))
+            self.assertEqual(len(detalles), 8)
             for ruta in detalles:
                 with Image.open(ruta) as im:
                     im.verify()
