@@ -55,6 +55,9 @@ EXPERIMENTOS["v6"] = dict(EXPERIMENTOS["v2"], modelo="v6", evaluar_train=True)
 # Preferencia del usuario para el siguiente ensayo: nueve épocas sin mejora.
 EXPERIMENTOS["v7"] = dict(EXPERIMENTOS["v2"], modelo="v7", evaluar_train=True,
                           paciencia=9, min_delta=0.0)
+# Corte orientativo del historial v2 normal: antes de la separación desde época 16.
+EXPERIMENTOS["v2_corto"] = dict(EXPERIMENTOS["v2"], epocas=15, paciencia=9,
+                               evaluar_train=True, min_delta=0.0)
 
 
 def guardar_json(ruta, contenido):
@@ -354,7 +357,7 @@ def dibujar_curvas(historial, ruta):
 def main():
     p = argparse.ArgumentParser(description=__doc__)
     p.add_argument("--experimento", choices=EXPERIMENTOS, default="baseline",
-                   help="Configuración reproducible: baseline, v2, v2_lr, v3, v4, v5, v6 o v7")
+                   help="Configuración reproducible: baseline, v2, v2_lr, v2_corto, v3, v4, v5, v6 o v7")
     p.add_argument("--modelo", choices=("baseline", "v2", "v3", "v5", "v6", "v7"), default=None)
     p.add_argument("--epocas", type=int, default=None)
     p.add_argument("--lr", type=float, default=None)

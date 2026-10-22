@@ -236,6 +236,24 @@ Conserva pesos por época y figuras individuales. Para la prueba corta, añadir
 los presets antiguos conservan sus valores para poder reproducirlos.
 Consulta la [arquitectura y protocolo de v7](docs/experimento_v7.md).
 
+## V2 original con entrenamiento corto
+
+`v2_corto` conserva la arquitectura de v2 y limita el entrenamiento a **15
+épocas**, con paciencia 9. El corte procede de la curva histórica de pérdida
+normal, antes de su separación sostenida a partir de la época 16. No garantiza
+un AUC mayor: el histórico tenía 0,568 en la 15 y 0,612 en la 24.
+
+```bash
+python -m src.training.entrenar --experimento v2_corto --perdida normal --dispositivo cuda --batch-size 16
+```
+
+Guarda todos los pesos de las épocas completadas y añade evaluación de train
+sin aumentos/dropout para comparar mejor sus curvas con validación. Para usar
+exactamente la época 15, cargar `normal/epocas/epoca_015.pt` si se ha completado;
+`mejor_modelo.pt` puede corresponder a otra época. El historial antiguo queda
+conservado y la ejecución nueva guarda sus propios resultados.
+Consulta el [análisis del corte y el uso de los pesos](docs/experimento_v2_corto.md).
+
 ## Resultados guardados
 
 Las pruebas realizadas en casa y las referencias recibidas del laboratorio se
