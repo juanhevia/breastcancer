@@ -17,7 +17,10 @@ from torch.utils.data import DataLoader
 
 from src.data import utils_caso as uc
 from src.data.aumentos import AumentosDCE
-from src.models.modelo import BreastCNN, BreastCNNV2, BreastCNNV3, BreastCNNV5, BreastCNNV6, contar_parametros
+from src.models.modelo import (
+    BreastCNN, BreastCNNV2, BreastCNNV3, BreastCNNV5, BreastCNNV6,
+    BreastCNNV7, contar_parametros,
+)
 from src.training.pacientes import (
     CortesPorPaciente, grupos_pacientes, juntar_pacientes,
     logits_media_paciente, perdida_pacientes,
@@ -49,6 +52,9 @@ EXPERIMENTOS = {
 EXPERIMENTOS["v2_lr"] = dict(EXPERIMENTOS["v2"], lr=3e-4, evaluar_train=True)
 # V6 recupera el lr original de v2 y añade la vista de contraste conjunto.
 EXPERIMENTOS["v6"] = dict(EXPERIMENTOS["v2"], modelo="v6", evaluar_train=True)
+# Preferencia del usuario para el siguiente ensayo: nueve épocas sin mejora.
+EXPERIMENTOS["v7"] = dict(EXPERIMENTOS["v2"], modelo="v7", evaluar_train=True,
+                          paciencia=9, min_delta=0.0)
 
 
 def guardar_json(ruta, contenido):
@@ -348,8 +354,8 @@ def dibujar_curvas(historial, ruta):
 def main():
     p = argparse.ArgumentParser(description=__doc__)
     p.add_argument("--experimento", choices=EXPERIMENTOS, default="baseline",
-                   help="Configuración reproducible: baseline, v2, v2_lr, v3, v4, v5 o v6")
-    p.add_argument("--modelo", choices=("baseline", "v2", "v3", "v5", "v6"), default=None)
+                   help="Configuración reproducible: baseline, v2, v2_lr, v3, v4, v5, v6 o v7")
+    p.add_argument("--modelo", choices=("baseline", "v2", "v3", "v5", "v6", "v7"), default=None)
     p.add_argument("--epocas", type=int, default=None)
     p.add_argument("--lr", type=float, default=None)
     p.add_argument("--batch-size", type=int, default=16)
@@ -439,7 +445,8 @@ def main():
         torch.backends.cudnn.benchmark = False
         torch.backends.cudnn.deterministic = True
         modelo = {"baseline": BreastCNN, "v2": BreastCNNV2,
-                  "v3": BreastCNNV3, "v5": BreastCNNV5, "v6": BreastCNNV6}[args.modelo]()
+                  "v3": BreastCNNV3, "v5": BreastCNNV5, "v6": BreastCNNV6,
+                  "v7": BreastCNNV7}[args.modelo]()
         por_paciente = args.unidad_entrenamiento == "paciente"
         filas_peso = train_df.drop_duplicates("patient_id") if por_paciente else train_df
         pw = uc.pos_weight(filas_peso) if perdida == "ponderada" else None

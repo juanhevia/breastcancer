@@ -202,6 +202,58 @@ class BreastCNNV6(BreastCNNV2):
         return super().forward(self.preparar_entrada(x))
 
 
+class BloqueResidualDCE(nn.Module):
+    """Dos convoluciones y un atajo; no contiene pesos preentrenados."""
+
+    def __init__(self, entrada, salida):
+        super().__init__()
+        self.rama = nn.Sequential(
+            nn.Conv2d(entrada, salida, 3, padding=1, bias=False),
+            nn.GroupNorm(8, salida), nn.ReLU(),
+            nn.Conv2d(salida, salida, 3, padding=1, bias=False),
+            nn.GroupNorm(8, salida),
+        )
+        self.atajo = (nn.Identity() if entrada == salida else nn.Sequential(
+            nn.Conv2d(entrada, salida, 1, bias=False), nn.GroupNorm(8, salida),
+        ))
+        self.activacion = nn.ReLU()
+
+    def forward(self, x):
+        return self.activacion(self.rama(x) + self.atajo(x))
+
+
+class BreastCNNV7(nn.Module):
+    """CNN residual compacta desde cero, con PRE/EARLY/LATE originales.
+
+    Cuatro etapas 16/32/64/96; los atajos permiten transmitir información y
+    gradientes además de la rama de dos convoluciones. Mantiene el resumen
+    media/máximo de v2 y reduce la anchura de la última etapa.
+    """
+
+    def __init__(self):
+        super().__init__()
+        bloques = []
+        entrada = 3
+        for canales in (16, 32, 64, 96):
+            bloques.extend([
+                BloqueResidualDCE(entrada, canales),
+                nn.MaxPool2d(2), nn.Dropout2d(.1),
+            ])
+            entrada = canales
+        self.features = nn.Sequential(*bloques)
+        self.media = nn.AdaptiveAvgPool2d(1)
+        self.maximo = nn.AdaptiveMaxPool2d(1)
+        self.classifier = nn.Sequential(
+            nn.Flatten(), nn.Dropout(.4), nn.Linear(192, 64),
+            nn.ReLU(), nn.Dropout(.3), nn.Linear(64, 1),
+        )
+
+    def forward(self, x):
+        x = self.features(x)
+        x = torch.cat((self.media(x), self.maximo(x)), dim=1)
+        return self.classifier(x).squeeze(1)
+
+
 def contar_parametros(modelo):
     entrenables = sum(p.numel() for p in modelo.parameters() if p.requires_grad)
     total = sum(p.numel() for p in modelo.parameters())

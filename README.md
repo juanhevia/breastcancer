@@ -218,6 +218,24 @@ individuales PNG/PDF. Añadir `--prueba --epocas 1` para verificar primero la GP
 El entrenamiento completo todavía no ha demostrado mejorar v2 ni alcanzar 0,70.
 Consulta el [protocolo, preprocesado y límites de v6](docs/experimento_v6.md).
 
+## Séptimo experimento: v7 residual, paciencia 9
+
+Nueva CNN propia desde cero con cuatro bloques residuales de 16/32/64/96 canales.
+Recibe las tres fases originales /255, con el cuerpo convolucional y la última
+etapa más compactos: 232.513 parámetros entrenables, frente a 310.513 de v2.
+Los atajos buscan facilitar el aprendizaje; su mejora de AUC está por comprobar.
+
+```bash
+python -m src.training.entrenar --experimento v7 --perdida ambas --dispositivo cuda --batch-size 16
+```
+
+Máximo 40 épocas por pérdida y **parada tras 9 épocas consecutivas sin mejorar
+el AUC por paciente**. Los empates cuentan; una mejora reinicia el contador.
+Conserva pesos por época y figuras individuales. Para la prueba corta, añadir
+`--prueba --epocas 1`. La preferencia para próximos ensayos es paciencia 9;
+los presets antiguos conservan sus valores para poder reproducirlos.
+Consulta la [arquitectura y protocolo de v7](docs/experimento_v7.md).
+
 ## Resultados guardados
 
 Las pruebas realizadas en casa y las referencias recibidas del laboratorio se
