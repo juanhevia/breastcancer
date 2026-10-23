@@ -57,7 +57,7 @@ La espera menor ahorra tiempo, pero puede perder mejoras que llegasen más tarde
 - Evaluación por paciente mediante media de sus probabilidades por corte.
 - Train evaluado sin aumentos/dropout para curvas comparables.
 - Scheduler ReduceLROnPlateau como v2; no cambia el criterio de selección.
-- `.pt` de cada época, mejor `.pt`, métricas e imágenes separadas PNG/PDF.
+- `.pt` de cada época, mejor `.pt`, métricas e imágenes separadas PNG.
 
 Frente a v2 cambian arquitectura y paciencia solicitada; no es una ablación de
 una única variable. Frente a v6 también se retira la vista auxiliar. Una mejora

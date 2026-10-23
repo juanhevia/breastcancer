@@ -322,12 +322,13 @@ def figura_individual(r, titulo, xlabel, ylabel):
 
 
 def guardar_presentacion(fig, ruta):
-    """PNG para diapositivas y PDF vectorial; una sola gráfica en cada archivo."""
+    """Una sola copia PNG de cada gráfica, a 300 dpi."""
     ruta = Path(ruta)
     if fig.axes[0].get_legend_handles_labels()[0]:
         fig.axes[0].legend(fontsize=10)
-    fig.savefig(ruta.with_suffix(".pdf"), bbox_inches="tight")
     fig.savefig(ruta, dpi=300, bbox_inches="tight", facecolor="white")
+    # Retira la copia del exportador anterior solo después de guardar el PNG.
+    ruta.with_suffix(".pdf").unlink(missing_ok=True)
     plt.close(fig)
 
 
@@ -427,7 +428,7 @@ def dibujar_detalle_individual(r, salida):
 
 
 def generar_graficas(carpeta, detalle=False):
-    """Cinco figuras independientes por pérdida, en PNG y PDF."""
+    """Cinco figuras independientes por pérdida, solo en PNG."""
     carpeta = Path(carpeta)
     registros = cargar_registros(carpeta)
     salida = carpeta / "graficas"
@@ -442,7 +443,7 @@ def generar_graficas(carpeta, detalle=False):
             if not destino.exists():
                 anterior.rename(destino)
     lineas = ["# Gráficas para presentación", "", titulo_general(registros), "", DEFINICION, "",
-              "Cada pérdida tiene su carpeta: normal/ o ponderada/. Cada figura tiene PNG a 300 dpi y PDF vectorial.",
+              "Cada pérdida tiene su carpeta: normal/ o ponderada/. Cada figura se guarda una sola vez, en PNG a 300 dpi.",
               "Las explicaciones se conservan aquí para dejar las diapositivas despejadas.", "",
               "- 01_perdida: todas las épocas; train_eval_loss si existe (sin aumentos/dropout), si no train_loss de optimización.",
               "- 02_auc_por_epoca: AUC por paciente en todas las épocas; train solo cuando se registró. Línea vertical: época elegida.",
@@ -483,7 +484,7 @@ def main():
         generar_graficas(args.carpeta, detalle=args.detalle)
     except ValueError as error:
         p.error(str(error))
-    print(f"Figuras individuales PNG/PDF y su guía: {args.carpeta / 'graficas'}")
+    print(f"Figuras individuales PNG y su guía: {args.carpeta / 'graficas'}")
 
 
 if __name__ == "__main__":

@@ -214,7 +214,7 @@ python -m src.training.entrenar --experimento v6 --perdida ambas --dispositivo c
 ```
 
 Hasta 40 épocas por pérdida, paciencia 12, con pesos por época y figuras
-individuales PNG/PDF. Añadir `--prueba --epocas 1` para verificar primero la GPU.
+individuales PNG. Añadir `--prueba --epocas 1` para verificar primero la GPU.
 El entrenamiento completo todavía no ha demostrado mejorar v2 ni alcanzar 0,70.
 Consulta el [protocolo, preprocesado y límites de v6](docs/experimento_v6.md).
 
@@ -301,9 +301,9 @@ Las métricas indefinidas aparecen como `null` en JSON.
 
 Cada ejecución crea `models/<ejecucion>/graficas/normal/` y, cuando corresponde,
 `graficas/ponderada/`. Cada archivo contiene **una sola gráfica**, con título,
-ejes y leyenda breve. Se exporta en **PNG a 300 dpi** y **PDF vectorial**.
+ejes y leyenda breve. Se exporta únicamente en **PNG a 300 dpi**, sin copias en otros formatos.
 
-| Archivo (PNG y PDF) | Contenido |
+| Archivo (PNG) | Contenido |
 |---|---|
 | `01_perdida` | Pérdida de entrenamiento y validación durante todas las épocas. |
 | `02_auc_por_epoca` | ROC-AUC por paciente durante todas las épocas; train cuando se registró. |

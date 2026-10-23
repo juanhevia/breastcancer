@@ -4,7 +4,7 @@ Validación interna · test reservado
 
 pCR = respuesta patológica completa; sin pCR = ausencia de respuesta completa.
 
-Cada pérdida tiene su carpeta: normal/ o ponderada/. Cada figura tiene PNG a 300 dpi y PDF vectorial.
+Cada pérdida tiene su carpeta: normal/ o ponderada/. Cada figura se guarda una sola vez, en PNG a 300 dpi.
 Las explicaciones se conservan aquí para dejar las diapositivas despejadas.
 
 - 01_perdida: todas las épocas; train_eval_loss si existe (sin aumentos/dropout), si no train_loss de optimización.

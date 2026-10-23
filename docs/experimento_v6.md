@@ -97,7 +97,7 @@ la disponibilidad de GPU se comprueba en el laboratorio, no en el Mac.
 Resultados en `models/<fecha_hora>_v6/`. Cada pérdida conserva
 `epocas/epoca_001.pt`, etc., y `mejor_modelo.pt`. Las figuras de pérdida, AUC por
 época, ROC, precisión–sensibilidad y confusión se exportan por separado en
-PNG/PDF. Las épocas no guardadas de ejecuciones anteriores no se reconstruyen.
+PNG. Las épocas no guardadas de ejecuciones anteriores no se reconstruyen.
 
 ## Interpretación y siguiente decisión
 

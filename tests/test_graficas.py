@@ -147,7 +147,7 @@ class GraficasTests(unittest.TestCase):
             with Image.open(raiz / "graficas" / "normal" / PRINCIPALES[1]) as imagen:
                 imagen.verify()
             self.assertEqual(len(list(raiz.rglob("*.png"))), 10)
-            self.assertEqual(len(list(raiz.rglob("*.pdf"))), 10)
+            self.assertEqual(len(list(raiz.rglob("*.pdf"))), 0)
             self.assertFalse((raiz / "graficas" / "detalle").exists())
             distintas = self.predicciones().replace({"patient_id": {"d": "otra"}})
             distintas.to_csv(raiz / "ponderada" / "predicciones_validacion.csv", index=False)
