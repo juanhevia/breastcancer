@@ -297,6 +297,27 @@ y especificidad **por paciente**; las pérdidas normal y ponderada tienen escala
 distintas. El umbral 0.5 es inicial, no está optimizado ni implica calibración.
 Las métricas indefinidas aparecen como `null` en JSON.
 
+### Comparación v2/v7 con cinco folds
+
+Para comparar ambas arquitecturas con selección interna de época/umbral y
+evaluación externa separada, sin tocar el test oficial:
+
+```bash
+python -m src.training.comparar_cv --dispositivo cuda --perdida ambas --solo-plan
+python -m src.training.comparar_cv --dispositivo cuda --perdida ambas
+```
+
+Son **20 entrenamientos**, con máximo 40 épocas y paciencia 9 para ambos
+modelos. Se guardan los `.pt` de todas las épocas. `--reanudar` omite trabajos
+completos y reinicia desde cero el incompleto. `--perdida normal` reduce el
+protocolo a 10 entrenamientos; usar una carpeta `--salida` diferente.
+
+Los resúmenes están en `models/comparacion_v2_v7/COMPARACION.md` y
+`resultados_por_fold.csv`. Solo se generan tablas e historiales, sin nuevas
+copias de gráficas. Consulta el [protocolo y sus límites](docs/comparacion_v2_v7.md):
+se entrena con tres folds, se selecciona con uno y se evalúa con otro; la
+desviación entre folds no es un intervalo de confianza ni sustituye al test final.
+
 ### Gráficas individuales para la presentación
 
 Cada ejecución crea `models/<ejecucion>/graficas/normal/` y, cuando corresponde,
