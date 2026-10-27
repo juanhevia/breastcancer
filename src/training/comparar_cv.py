@@ -7,6 +7,7 @@ python -m src.training.comparar_cv --dispositivo cuda --perdida ambas
 import argparse
 import hashlib
 import json
+import math
 import random
 import time
 from datetime import datetime
@@ -119,6 +120,7 @@ def predecir(modelo, filas, datos, dispositivo, batch_size, workers):
 
 
 def ejecutar_fold(args, samples, fold, arquitectura, perdida, destino):
+    lr = getattr(args, "lr", 1e-4)
     train, interna, externa = particiones(samples, fold, args.prueba, args.semilla)
     random.seed(args.semilla)
     np.random.seed(args.semilla)
@@ -133,7 +135,7 @@ def ejecutar_fold(args, samples, fold, arquitectura, perdida, destino):
     seleccion.mkdir()
     config = dict(modelo=arquitectura, perdida=perdida, fold_externo=fold,
                   fold_interno=(fold + 1) % 5, prueba=args.prueba, semilla=args.semilla,
-                  epocas=args.epocas, paciencia=9, lr=1e-4, weight_decay=.001,
+                  epocas=args.epocas, paciencia=9, lr=lr, weight_decay=.001,
                   seleccion="auc", agregacion="mean", umbral=.5, evaluar_train=True,
                   batch_size=args.batch_size, normalizacion="PRE, EARLY, LATE / 255",
                   criterio_umbral="Máximo F1 macro en selección interna; no criterio clínico",
@@ -146,7 +148,7 @@ def ejecutar_fold(args, samples, fold, arquitectura, perdida, destino):
     hist, _, mejor_epoca, _ = entrenar(
         modelo, uc.BreastDCEDataset(train, args.datos, transform=AumentosDCE()),
         uc.BreastDCEDataset(interna, args.datos), interna,
-        epocas=args.epocas, lr=1e-4, batch_size=args.batch_size,
+        epocas=args.epocas, lr=lr, batch_size=args.batch_size,
         pos_weight=uc.pos_weight(train) if perdida == "ponderada" else None,
         paciencia=9, dispositivo=args.dispositivo, salida=seleccion, semilla=args.semilla,
         num_workers=args.num_workers, optimizador="adamw", weight_decay=.001,
@@ -209,7 +211,7 @@ def resumir(resultados, salida):
         pareadas = pareadas.dropna(subset=["v2", "v7"])
         pareadas["diferencia_v7_menos_v2"] = pareadas.v7 - pareadas.v2
         pareadas.to_csv(salida / "diferencias_pareadas.csv")
-    lineas = ["# Comparación de desarrollo v2 / v7", "", AVISO, "",
+    lineas = ["# Validación cruzada de desarrollo", "", AVISO, "",
               "PRUEBA REDUCIDA: no mide rendimiento." if any(r["prueba"] for r in resultados)
               else "AUC externa por paciente; umbral elegido exclusivamente en el fold interno.", "",
               "| Modelo | Pérdida | Folds | AUC media ± desviación |", "|---|---|---|---|"]
@@ -229,6 +231,10 @@ def main():
     p.add_argument("--salida", type=Path, default=uc.RAIZ / "models" / "comparacion_v2_v7")
     p.add_argument("--dispositivo", choices=["cpu", "cuda", "mps"], default="cuda")
     p.add_argument("--perdida", choices=["normal", "ponderada", "ambas"], default="ambas")
+    p.add_argument("--modelos", nargs="+", choices=list(MODELOS), default=list(MODELOS),
+                   help="Arquitecturas que se ejecutan; por defecto v2 y v7")
+    p.add_argument("--lr", type=float, default=1e-4,
+                   help="Tasa inicial de aprendizaje; usar una salida nueva para cada ensayo")
     p.add_argument("--epocas", type=int, default=40)
     p.add_argument("--batch-size", type=int, default=16)
     p.add_argument("--num-workers", type=int, default=0)
@@ -240,11 +246,15 @@ def main():
     args = p.parse_args()
     if min(args.epocas, args.batch_size, args.hilos) < 1 or args.num_workers < 0:
         p.error("Épocas, batch e hilos deben ser positivos; workers >= 0.")
+    if not math.isfinite(args.lr) or args.lr <= 0:
+        p.error("lr debe ser finito y positivo.")
+    if len(set(args.modelos)) != len(args.modelos):
+        p.error("No repitas arquitecturas en --modelos.")
     samples = uc.cargar_samples(args.datos)
     desarrollo = validar_samples(samples)
     perdidas = ["normal", "ponderada"] if args.perdida == "ambas" else [args.perdida]
-    protocolo = dict(version=1, modelos=list(MODELOS), perdidas=perdidas, epocas=args.epocas,
-                     paciencia=9, lr=1e-4, weight_decay=.001, semilla=args.semilla,
+    protocolo = dict(version=1, modelos=args.modelos, perdidas=perdidas, epocas=args.epocas,
+                     paciencia=9, lr=args.lr, weight_decay=.001, semilla=args.semilla,
                      batch_size=args.batch_size, num_workers=args.num_workers, hilos=args.hilos,
                      dispositivo=args.dispositivo, prueba=args.prueba, datos=str(args.datos.resolve()),
                      metadata_sha256=hashlib.sha256(samples.to_csv(index=False).encode()).hexdigest(),
@@ -257,7 +267,8 @@ def main():
         grupos = particiones(samples, fold, args.prueba, args.semilla)
         print(f"Fold {fold}: train/interno/externo = "
               f"{[g.patient_id.nunique() for g in grupos]} pacientes", flush=True)
-    print(f"{10 * len(perdidas)} entrenamientos; máximo {args.epocas} épocas cada uno; "
+    print(f"Modelos: {', '.join(args.modelos)} | pérdidas: {', '.join(perdidas)} | lr inicial: {args.lr:g}", flush=True)
+    print(f"{5 * len(args.modelos) * len(perdidas)} entrenamientos; máximo {args.epocas} épocas cada uno; "
           f"paciencia 9. Test oficial excluido ({desarrollo.patient_id.nunique()} pacientes de desarrollo).", flush=True)
     if args.solo_plan:
         return
@@ -281,7 +292,7 @@ def main():
     try:
         for fold in range(5):
             for perdida in perdidas:
-                for arquitectura in MODELOS:
+                for arquitectura in args.modelos:
                     carpeta = args.salida / f"fold_{fold}" / arquitectura / perdida
                     marcador = carpeta / "resultado.json"
                     if marcador.exists():

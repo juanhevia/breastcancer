@@ -63,12 +63,16 @@ class ComparacionCVTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as tmp:
             salida = Path(tmp) / "normal"
             args = Namespace(datos=Path(tmp), prueba=False, semilla=42, epocas=2,
-                             batch_size=2, dispositivo="cpu", num_workers=0)
+                             batch_size=2, dispositivo="cpu", num_workers=0, lr=3e-4)
             samples = self.samples()
             pasos = []
 
             def entrenar_falso(modelo, tr, va, filas, **kw):
                 pasos.append("entrenar")
+                self.assertEqual(kw["lr"], 3e-4)
+                config = json.loads((kw["salida"] / "configuracion.json").read_text())
+                self.assertEqual(config["lr"], kw["lr"])
+                self.assertEqual(kw["paciencia"], 9)
                 self.assertFalse(set(filas.patient_id) & set(samples[samples.fold == 0].patient_id))
                 self.assertFalse(set(kw["train_samples"].patient_id) & set(samples[samples.fold == 0].patient_id))
                 pred = filas[["sample_id", "patient_id", "pCR"]].assign(probabilidad=filas.pCR * .2 + .1)
@@ -166,6 +170,48 @@ class ComparacionCVTests(unittest.TestCase):
                         contextlib.redirect_stderr(io.StringIO()), self.assertRaises(SystemExit) as error:
                     main()
                 self.assertEqual(error.exception.code, 2)
+
+                # Ensayo aislado: solo cinco v7, sin volver a ejecutar v2 ni
+                # reutilizar por accidente resultados con otra tasa.
+                llamadas.clear()
+                nuevo = raiz / "v7_lr"
+                argv_lr = ["comparar_cv", "--datos", str(raiz), "--salida", str(nuevo),
+                           "--dispositivo", "cpu", "--perdida", "normal",
+                           "--modelos", "v7", "--lr", "0.0003"]
+
+                def cinco_folds(args, samples, fold, modelo, perdida, destino):
+                    self.assertEqual(args.lr, .0003)
+                    self.assertEqual(modelo, "v7")
+                    destino.mkdir(parents=True)
+                    llamadas.append((fold, modelo))
+                    r = dict(modelo=modelo, perdida=perdida, fold=fold, prueba=False,
+                             mejor_epoca=1, umbral=.3, auc_interno=.7, auc_train=.8,
+                             externo=dict(auc=.6, sensibilidad=.5, especificidad=.7, f1_macro=.5))
+                    (destino / "resultado.json").write_text(json.dumps(r))
+                    return r
+
+                with patch("src.training.comparar_cv.ejecutar_fold", side_effect=cinco_folds), \
+                        patch("sys.argv", argv_lr):
+                    main()
+                self.assertEqual(llamadas, [(f, "v7") for f in range(5)])
+                protocolo = json.loads((nuevo / "protocolo.json").read_text())
+                self.assertEqual(protocolo["modelos"], ["v7"])
+                self.assertEqual(protocolo["lr"], .0003)
+                self.assertEqual(len(list(salida.glob("fold_*/v*/normal/resultado.json"))), 10)
+                with patch("sys.argv", argv_lr + ["--reanudar", "--lr", "0.0001"]), \
+                        contextlib.redirect_stderr(io.StringIO()), self.assertRaises(SystemExit) as error:
+                    main()
+                self.assertEqual(error.exception.code, 2)
+
+    def test_rechaza_lr_invalido_antes_de_leer_datos(self):
+        for lr in ("0", "-0.1", "nan", "inf"):
+            with self.subTest(lr=lr), patch("sys.argv", ["comparar_cv", "--lr", lr]), \
+                    contextlib.redirect_stderr(io.StringIO()), \
+                    patch("src.training.comparar_cv.uc.cargar_samples") as cargar, \
+                    self.assertRaises(SystemExit) as error:
+                main()
+            self.assertEqual(error.exception.code, 2)
+            cargar.assert_not_called()
 
 
 if __name__ == "__main__":
