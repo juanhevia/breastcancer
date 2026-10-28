@@ -21,11 +21,11 @@ from torch.utils.data import DataLoader
 
 from src.data import utils_caso as uc
 from src.data.aumentos import AumentosDCE
-from src.models.modelo import BreastCNNV2, BreastCNNV7
+from src.models.modelo import BreastCNNV2, BreastCNNV7, BreastCNNV8, contar_parametros
 from src.training.entrenar import entrenar, guardar_json
 
 
-MODELOS = {"v2": BreastCNNV2, "v7": BreastCNNV7}
+MODELOS = {"v2": BreastCNNV2, "v7": BreastCNNV7, "v8": BreastCNNV8}
 AVISO = (
     "CV de desarrollo: cinco folds externos con selección en un fold interno. "
     "No es test final ni CV anidada exhaustiva. La desviación entre folds no es un IC. "
@@ -140,6 +140,9 @@ def ejecutar_fold(args, samples, fold, arquitectura, perdida, destino):
                   batch_size=args.batch_size, normalizacion="PRE, EARLY, LATE / 255",
                   criterio_umbral="Máximo F1 macro en selección interna; no criterio clínico",
                   python_torch=str(torch.__version__), dispositivo=args.dispositivo)
+    config.update(parametros=contar_parametros(modelo)[0],
+                  representacion_interna=("PRE, EARLY, LATE, EARLY-PRE, LATE-EARLY"
+                                          if arquitectura == "v8" else "PRE, EARLY, LATE"))
     guardar_json(seleccion / "configuracion.json", config)
     pd.concat([g.assign(uso=uso) for g, uso in zip(
         (train, interna, externa), ("train", "seleccion_interna", "evaluacion_externa"))]
@@ -231,7 +234,7 @@ def main():
     p.add_argument("--salida", type=Path, default=uc.RAIZ / "models" / "comparacion_v2_v7")
     p.add_argument("--dispositivo", choices=["cpu", "cuda", "mps"], default="cuda")
     p.add_argument("--perdida", choices=["normal", "ponderada", "ambas"], default="ambas")
-    p.add_argument("--modelos", nargs="+", choices=list(MODELOS), default=list(MODELOS),
+    p.add_argument("--modelos", nargs="+", choices=list(MODELOS), default=["v2", "v7"],
                    help="Arquitecturas que se ejecutan; por defecto v2 y v7")
     p.add_argument("--lr", type=float, default=1e-4,
                    help="Tasa inicial de aprendizaje; usar una salida nueva para cada ensayo")

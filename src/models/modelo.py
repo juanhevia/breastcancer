@@ -230,10 +230,10 @@ class BreastCNNV7(nn.Module):
     media/máximo de v2 y reduce la anchura de la última etapa.
     """
 
-    def __init__(self):
+    def __init__(self, canales_entrada=3):
         super().__init__()
         bloques = []
-        entrada = 3
+        entrada = canales_entrada
         for canales in (16, 32, 64, 96):
             bloques.extend([
                 BloqueResidualDCE(entrada, canales),
@@ -252,6 +252,29 @@ class BreastCNNV7(nn.Module):
         x = self.features(x)
         x = torch.cat((self.media(x), self.maximo(x)), dim=1)
         return self.classifier(x).squeeze(1)
+
+
+class BreastCNNV8(BreastCNNV7):
+    """V7 con fases originales y dos diferencias temporales explícitas.
+
+    Recibe tres PNG /255; calcula internamente EARLY-PRE y LATE-EARLY,
+    sin recorte ni división, también en inferencia. Son canales redundantes:
+    no añaden información ni garantizan mejora. Se prueba otra representación
+    de entrada manteniendo los bloques y la capacidad casi constantes.
+    """
+
+    def __init__(self):
+        super().__init__(canales_entrada=5)
+
+    @staticmethod
+    def preparar_entrada(x):
+        if x.ndim != 4 or x.shape[1] != 3:
+            raise ValueError("Se espera (batch, 3, alto, ancho) PRE/EARLY/LATE.")
+        return torch.cat((x, x[:, 1:2] - x[:, 0:1],
+                          x[:, 2:3] - x[:, 1:2]), dim=1)
+
+    def forward(self, x):
+        return super().forward(self.preparar_entrada(x))
 
 
 def contar_parametros(modelo):

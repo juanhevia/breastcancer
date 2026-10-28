@@ -19,7 +19,7 @@ from src.data import utils_caso as uc
 from src.data.aumentos import AumentosDCE
 from src.models.modelo import (
     BreastCNN, BreastCNNV2, BreastCNNV3, BreastCNNV5, BreastCNNV6,
-    BreastCNNV7, contar_parametros,
+    BreastCNNV7, BreastCNNV8, contar_parametros,
 )
 from src.training.pacientes import (
     CortesPorPaciente, grupos_pacientes, juntar_pacientes,
@@ -55,6 +55,7 @@ EXPERIMENTOS["v6"] = dict(EXPERIMENTOS["v2"], modelo="v6", evaluar_train=True)
 # Preferencia del usuario para el siguiente ensayo: nueve épocas sin mejora.
 EXPERIMENTOS["v7"] = dict(EXPERIMENTOS["v2"], modelo="v7", evaluar_train=True,
                           paciencia=9, min_delta=0.0)
+EXPERIMENTOS["v8"] = dict(EXPERIMENTOS["v7"], modelo="v8")
 # Corte orientativo del historial v2 normal: antes de la separación desde época 16.
 EXPERIMENTOS["v2_corto"] = dict(EXPERIMENTOS["v2"], epocas=15, paciencia=9,
                                evaluar_train=True, min_delta=0.0)
@@ -357,8 +358,8 @@ def dibujar_curvas(historial, ruta):
 def main():
     p = argparse.ArgumentParser(description=__doc__)
     p.add_argument("--experimento", choices=EXPERIMENTOS, default="baseline",
-                   help="Configuración reproducible: baseline, v2, v2_lr, v2_corto, v3, v4, v5, v6 o v7")
-    p.add_argument("--modelo", choices=("baseline", "v2", "v3", "v5", "v6", "v7"), default=None)
+                   help="Configuración reproducible: baseline, v2, v2_lr, v2_corto, v3, v4, v5, v6, v7 o v8")
+    p.add_argument("--modelo", choices=("baseline", "v2", "v3", "v5", "v6", "v7", "v8"), default=None)
     p.add_argument("--epocas", type=int, default=None)
     p.add_argument("--lr", type=float, default=None)
     p.add_argument("--batch-size", type=int, default=16)
@@ -449,7 +450,7 @@ def main():
         torch.backends.cudnn.deterministic = True
         modelo = {"baseline": BreastCNN, "v2": BreastCNNV2,
                   "v3": BreastCNNV3, "v5": BreastCNNV5, "v6": BreastCNNV6,
-                  "v7": BreastCNNV7}[args.modelo]()
+                  "v7": BreastCNNV7, "v8": BreastCNNV8}[args.modelo]()
         por_paciente = args.unidad_entrenamiento == "paciente"
         filas_peso = train_df.drop_duplicates("patient_id") if por_paciente else train_df
         pw = uc.pos_weight(filas_peso) if perdida == "ponderada" else None
@@ -491,6 +492,8 @@ def main():
                                          if args.modelo == "v5" else "Ninguna antes de las convoluciones"),
                       representacion_interna=("PRE, EARLY-PRE, LATE-EARLY; diferencias sin recortar ni dividir"
                                               if args.modelo == "v3" else
+                                              "PRE, EARLY, LATE, EARLY-PRE, LATE-EARLY; diferencias sin recortar ni dividir"
+                                              if args.modelo == "v8" else
                                               "PRE, EARLY, LATE originales + las mismas fases con contraste conjunto"
                                               if args.modelo == "v6" else "PRE, EARLY, LATE"),
                       evaluacion_train=("Todos los cortes originales, sin aumentos, modo eval; solo diagnóstico"
