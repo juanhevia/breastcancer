@@ -21,16 +21,16 @@ El apartado de imágenes describe el código de v7/v8: PNG gris 256×256, float3
 tres fases juntas, solo durante entrenamiento. El esquema animado es sintético;
 no es una imagen de paciente ni modifica las imágenes que se cargan al visor.
 
-La sección de evidencia conserva resultados históricos de desarrollo,
-independientes del modelo conectado: pérdida y AUC de todas las épocas de v7,
-ROC interna por paciente y comparación CV de v2/v7. Cada gráfica se muestra una
-vez, solo en PNG. Un selector permite consultar las métricas de cada época.
-No presenta la validación interna ni la CV como test final. V8 figura pendiente.
-`python -m app.exportar_evidencia` genera la evidencia desde las fuentes locales
-documentadas en el script; exporta curvas y valores agregados, sin imágenes ni
-identificadores de pacientes. Los PNG incluidos permiten servir la web sin
-disponer de esas fuentes. Al cerrar la selección hay que actualizar explícitamente
-esta evidencia, sus títulos y la arquitectura si cambia.
+La evidencia muestra el v8 final: pérdida y AUC de las 15 épocas, comparación
+CV completa, ROC, matriz, calibración y dos errores del test. Cada figura tiene
+un único PNG en `app/static/evidencia/v8/`; el Word reutiliza esos mismos archivos.
+Las métricas distinguen selección interna (AUC 0,576), CV (0,543 ± 0,048) y test
+(AUC 0,504; IC 95 % 0,410–0,597). No se reajusta el modelo después del test.
+
+`python -m app.exportar_v8 --origen models/importados_entrega_v8/models`
+verifica particiones, pesos y métricas contra las predicciones guardadas y exporta
+los resultados agregados. No entrena ni ejecuta inferencia. El exportador previo
+`app.exportar_evidencia` conserva la evidencia histórica v7, sin cambiar v8.
 
 La ficha y los resultados se rellenan con el paquete del modelo, sin editar el
 HTML. Sin modelo conectado no se muestran predicciones ni métricas inventadas.
@@ -61,17 +61,23 @@ salvo que se indique `--destino`. No sobrescribe paquetes. No hay un umbral
 preseleccionado ni envíos a internet. El manifiesto conserva la justificación y
 el SHA-256 de los pesos. Los modelos de prueba se identifican como tales.
 
-Los paquetes se identifican por defecto como «Candidato provisional». El campo
-opcional `estado_modelo` del manifiesto permite documentar su estado definitivo.
-En el Mac existe un paquete local `models/app_v7_candidato_20261027` para probar
-el flujo completo con v7 entrenado. No está incluido en Git ni selecciona el
-modelo final; la página lo etiqueta como provisional.
-
-Con el paquete preparado:
+El paquete final es `models/app_modelo_v8`, época 6 y umbral 0,356243176.
+Los pesos permanecen fuera de Git. La variable `BREAST_MODEL_DIR` debe apuntar
+al paquete local; no al directorio de resultados de test.
 
 ```bash
-BREAST_MODEL_DIR=models/app_modelo python -m uvicorn app.servidor:app --host 127.0.0.1 --port 8000
+BREAST_MODEL_DIR=models/app_modelo_v8 python -m uvicorn app.servidor:app --host 127.0.0.1 --port 8000
 ```
+
+Los paquetes nuevos incluyen `metricas_internas_umbral.json`. Si el paquete se
+preparó con la primera versión del recopilador, puede añadirse sin cambiar pesos:
+
+```bash
+cp models/final_train_v8/normal/metricas_internas_umbral.json models/app_modelo_v8/
+```
+
+La ficha muestra las métricas internas al umbral elegido cuando existe este
+archivo; los paquetes históricos conservan sus métricas a 0,5, identificadas.
 
 ## Entrada y agregación
 
@@ -94,7 +100,7 @@ de la validación privada del profesor.
 ## Pendiente antes de entregar
 
 La implementación local NO equivale al despliegue obligatorio por URL pública.
-Falta elegir el paquete final, desplegar en un servicio Python/PyTorch y verificar
+El paquete v8 está fijado. Falta desplegar en un servicio Python/PyTorch y verificar
 la URL desde otro equipo. GitHub Pages por sí solo no ejecuta este servidor.
 No se ha contratado alojamiento ni publicado un modelo provisional.
 

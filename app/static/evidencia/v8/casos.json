@@ -1,0 +1,19 @@
+{
+  "seleccion": "FP de mayor puntuación y FN de menor puntuación; corte central disponible de cada paciente. Selección posterior al test solo descriptiva, sin modificar modelo.",
+  "casos": [
+    {
+      "tipo": "Falso positivo",
+      "probabilidad": 0.3763588666915893,
+      "clase_real": 0,
+      "corte": 8,
+      "numero_cortes": 10
+    },
+    {
+      "tipo": "Falso negativo",
+      "probabilidad": 0.2582816779613495,
+      "clase_real": 1,
+      "corte": 11,
+      "numero_cortes": 10
+    }
+  ]
+}

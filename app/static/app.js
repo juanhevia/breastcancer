@@ -165,10 +165,10 @@ window.addEventListener('scroll', () => {
 seccionActiva(enlaces.find(a => a.getAttribute('href') === location.hash) || enlaces[0]);
 (async()=>{try{
   const r=await fetch('/api/modelo');if(!r.ok)throw new Error('No se pudo consultar el modelo.');modelo=await r.json();
-  $('estado').textContent=modelo.disponible ? (modelo.prueba?'Modelo de prueba reducida: sus resultados no estiman rendimiento predictivo.':`${modelo.estado_modelo || 'Candidato provisional'}: ${modelo.modelo.toUpperCase()} conectado para la demostración. El umbral procede de validación interna; las curvas históricas se identifican por separado.`) : 'El modelo definitivo está pendiente de selección. Puedes cargar y explorar las imágenes mientras tanto.';
+  $('estado').textContent=modelo.disponible ? (modelo.prueba?'Modelo de prueba reducida: sus resultados no estiman rendimiento predictivo.':`${modelo.estado_modelo || 'Candidato provisional'}: ${modelo.modelo.toUpperCase()} conectado para la demostración. El umbral procede de validación interna; la sección de evidencia documenta el v8 final.`) : 'V8 está seleccionado, pero sus pesos no están conectados a este servidor. Puedes explorar las imágenes.';
   if(modelo.disponible){
     $('modelo-badge').textContent=modelo.prueba?'Prueba técnica':(modelo.estado_modelo || 'Candidato provisional');$('modelo-badge').classList.add('ready');
-    $('modelo-nombre').textContent=modelo.modelo.toUpperCase();$('modelo-umbral').textContent=modelo.umbral.toLocaleString('es-ES');
+    $('modelo-nombre').textContent=modelo.modelo.toUpperCase();$('modelo-umbral').textContent=modelo.umbral.toLocaleString('es-ES', {maximumFractionDigits:9});
     $('modelo-pendiente').hidden=true;
     lista('datos-modelo',[['Parámetros entrenables',modelo.parametros?.toLocaleString('es-ES')],['Estado',modelo.estado_modelo],['Dispositivo',modelo.dispositivo],['Criterio del umbral',modelo.criterio_umbral],['SHA-256',modelo.sha256]]);
     const e=modelo.entrenamiento,m=modelo.metricas_internas;

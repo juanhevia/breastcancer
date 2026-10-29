@@ -1,0 +1,43 @@
+{
+  "modelo": "v8",
+  "sha256_checkpoint": "139511ded0625b6b1fdac6cfed04c3e03122b9d660c3ff4b8503a0e2e4115b66",
+  "unidad_auc": "paciente",
+  "fuentes": [
+    {
+      "archivo": "models/importados_entrega_v8/models/final_train_v8/normal/historial.csv",
+      "sha256": "a2bdd7251660d900f54d725dee79e5769b74effa9582c5ca64db22c08630d0c1"
+    },
+    {
+      "archivo": "models/importados_entrega_v8/models/final_train_v8/normal/metricas_internas_umbral.json",
+      "sha256": "87c44944baeaa6af0e61f5541cecdbdeb4f90f87925216a41becb3f490d71bc5"
+    },
+    {
+      "archivo": "models/importados_entrega_v8/models/test_final_v8/metricas_test.json",
+      "sha256": "a1ecf220abb85992b6bf5baa252c25a16bbb555a6b269f0f1f751a8e89741e3d"
+    },
+    {
+      "archivo": "models/importados_entrega_v8/models/test_final_v8/metricas_cohortes.json",
+      "sha256": "9d59d8bcdcb3a6811480aa8dd9aae8abeff53b4914ce185d9ee955370e4eaaca"
+    },
+    {
+      "archivo": "models/importados_entrega_v8/models/test_final_v8/protocolo_fijado.json",
+      "sha256": "469ba898b62604896e31bba47f48240e8a1c37e885e125dc000e89e7c31dbb61"
+    },
+    {
+      "archivo": "models/importados_entrega_v8/models/final_train_v8/particion_pacientes.csv",
+      "sha256": "4cfdbd17a0fb860c32bca400902801aae825b87449cafcba7bdc2c975986e898"
+    },
+    {
+      "archivo": "models/importados_entrega_v8/models/comparacion_v2_v7/resultados_por_fold.csv",
+      "sha256": "6343920280630989ceb198d835a35f8657ed97683b876838c1cc900859c30cb7"
+    },
+    {
+      "archivo": "models/importados_entrega_v8/models/cv_v7_lr3e4/resultados_por_fold.csv",
+      "sha256": "9ae594338c9849b9760a583f32039e2be9d6a149fc0a17b4c0140b27ce9c5d5e"
+    },
+    {
+      "archivo": "models/importados_entrega_v8/models/cv_v8_realce/resultados_por_fold.csv",
+      "sha256": "ad1baa80b9f7e2ed6f36cecea377b9138fb086002616b1e0e95034ed969e3658"
+    }
+  ]
+}

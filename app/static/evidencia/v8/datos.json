@@ -1,0 +1,501 @@
+{
+  "modelo": "v8",
+  "sha256": "139511ded0625b6b1fdac6cfed04c3e03122b9d660c3ff4b8503a0e2e4115b66",
+  "mejor_epoca": 6,
+  "umbral": 0.356243176,
+  "pacientes_entrenamiento": 878,
+  "pacientes_validacion": 219,
+  "test": {
+    "pacientes": 176,
+    "metodo": "mean",
+    "umbral": 0.356243176,
+    "matriz_confusion": {
+      "VP": 10,
+      "VN": 90,
+      "FP": 33,
+      "FN": 43
+    },
+    "accuracy": 0.5681818181818182,
+    "sensibilidad": 0.18867924528301888,
+    "especificidad": 0.7317073170731707,
+    "precision": 0.23255813953488372,
+    "auc": 0.5042184384107993,
+    "f1_macro": 0.4557291666666667,
+    "por_clase": {
+      "sin_pCR": {
+        "precision": 0.6766917293233082,
+        "recall": 0.7317073170731707,
+        "f1-score": 0.703125,
+        "support": 123.0
+      },
+      "con_pCR": {
+        "precision": 0.23255813953488372,
+        "recall": 0.18867924528301888,
+        "f1-score": 0.20833333333333334,
+        "support": 53.0
+      },
+      "accuracy": 0.5681818181818182,
+      "macro avg": {
+        "precision": 0.45462493442909596,
+        "recall": 0.46019328117809477,
+        "f1-score": 0.4557291666666667,
+        "support": 176.0
+      },
+      "weighted avg": {
+        "precision": 0.5429469551256576,
+        "recall": 0.5681818181818182,
+        "f1-score": 0.5541252367424243,
+        "support": 176.0
+      }
+    },
+    "auc_ic95": [
+      0.4104924068108605,
+      0.5974919466175793
+    ],
+    "metodo_ic": "Bootstrap estratificado por paciente, 2000 remuestreos, semilla 42",
+    "brier": 0.21244395266484473,
+    "siempre_sin_pcr": {
+      "pacientes": 176,
+      "metodo": "mean",
+      "umbral": 0.5,
+      "matriz_confusion": {
+        "VP": 0,
+        "VN": 123,
+        "FP": 0,
+        "FN": 53
+      },
+      "accuracy": 0.6988636363636364,
+      "sensibilidad": 0.0,
+      "especificidad": 1.0,
+      "precision": null,
+      "auc": 0.5,
+      "f1_macro": 0.411371237458194,
+      "por_clase": {
+        "sin_pCR": {
+          "precision": 0.6988636363636364,
+          "recall": 1.0,
+          "f1-score": 0.822742474916388,
+          "support": 123.0
+        },
+        "con_pCR": {
+          "precision": 0.0,
+          "recall": 0.0,
+          "f1-score": 0.0,
+          "support": 53.0
+        },
+        "accuracy": 0.6988636363636364,
+        "macro avg": {
+          "precision": 0.3494318181818182,
+          "recall": 0.5,
+          "f1-score": 0.411371237458194,
+          "support": 176.0
+        },
+        "weighted avg": {
+          "precision": 0.4884103822314049,
+          "recall": 0.6988636363636364,
+          "f1-score": 0.5749847978108847,
+          "support": 176.0
+        }
+      }
+    }
+  },
+  "internas": {
+    "pacientes": 219,
+    "metodo": "mean",
+    "umbral": 0.356243176,
+    "matriz_confusion": {
+      "VP": 27,
+      "VN": 109,
+      "FP": 46,
+      "FN": 37
+    },
+    "accuracy": 0.6210045662100456,
+    "sensibilidad": 0.421875,
+    "especificidad": 0.7032258064516129,
+    "precision": 0.3698630136986301,
+    "auc": 0.5760080645161291,
+    "f1_macro": 0.559206537817979,
+    "por_clase": {
+      "sin_pCR": {
+        "precision": 0.7465753424657534,
+        "recall": 0.7032258064516129,
+        "f1-score": 0.7242524916943521,
+        "support": 155.0
+      },
+      "con_pCR": {
+        "precision": 0.3698630136986301,
+        "recall": 0.421875,
+        "f1-score": 0.39416058394160586,
+        "support": 64.0
+      },
+      "accuracy": 0.6210045662100456,
+      "macro avg": {
+        "precision": 0.5582191780821918,
+        "recall": 0.5625504032258064,
+        "f1-score": 0.559206537817979,
+        "support": 219.0
+      },
+      "weighted avg": {
+        "precision": 0.6364858947895164,
+        "recall": 0.6210045662100456,
+        "f1-score": 0.6277872766433213,
+        "support": 219.0
+      }
+    }
+  },
+  "cohortes": {
+    "duke": {
+      "pacientes": 42,
+      "metodo": "mean",
+      "umbral": 0.356243176,
+      "matriz_confusion": {
+        "VP": 2,
+        "VN": 25,
+        "FP": 8,
+        "FN": 7
+      },
+      "accuracy": 0.6428571428571429,
+      "sensibilidad": 0.2222222222222222,
+      "especificidad": 0.7575757575757576,
+      "precision": 0.2,
+      "auc": 0.5824915824915825,
+      "f1_macro": 0.4898785425101215,
+      "por_clase": {
+        "sin_pCR": {
+          "precision": 0.78125,
+          "recall": 0.7575757575757576,
+          "f1-score": 0.7692307692307693,
+          "support": 33.0
+        },
+        "con_pCR": {
+          "precision": 0.2,
+          "recall": 0.2222222222222222,
+          "f1-score": 0.21052631578947367,
+          "support": 9.0
+        },
+        "accuracy": 0.6428571428571429,
+        "macro avg": {
+          "precision": 0.490625,
+          "recall": 0.4898989898989899,
+          "f1-score": 0.4898785425101215,
+          "support": 42.0
+        },
+        "weighted avg": {
+          "precision": 0.6566964285714286,
+          "recall": 0.6428571428571429,
+          "f1-score": 0.6495083863504917,
+          "support": 42.0
+        }
+      }
+    },
+    "spy1": {
+      "pacientes": 35,
+      "metodo": "mean",
+      "umbral": 0.356243176,
+      "matriz_confusion": {
+        "VP": 0,
+        "VN": 16,
+        "FP": 7,
+        "FN": 12
+      },
+      "accuracy": 0.45714285714285713,
+      "sensibilidad": 0.0,
+      "especificidad": 0.6956521739130435,
+      "precision": 0.0,
+      "auc": 0.27898550724637683,
+      "f1_macro": 0.3137254901960784,
+      "por_clase": {
+        "sin_pCR": {
+          "precision": 0.5714285714285714,
+          "recall": 0.6956521739130435,
+          "f1-score": 0.6274509803921569,
+          "support": 23.0
+        },
+        "con_pCR": {
+          "precision": 0.0,
+          "recall": 0.0,
+          "f1-score": 0.0,
+          "support": 12.0
+        },
+        "accuracy": 0.45714285714285713,
+        "macro avg": {
+          "precision": 0.2857142857142857,
+          "recall": 0.34782608695652173,
+          "f1-score": 0.3137254901960784,
+          "support": 35.0
+        },
+        "weighted avg": {
+          "precision": 0.37551020408163266,
+          "recall": 0.45714285714285713,
+          "f1-score": 0.41232492997198883,
+          "support": 35.0
+        }
+      }
+    },
+    "spy2": {
+      "pacientes": 99,
+      "metodo": "mean",
+      "umbral": 0.356243176,
+      "matriz_confusion": {
+        "VP": 8,
+        "VN": 49,
+        "FP": 18,
+        "FN": 24
+      },
+      "accuracy": 0.5757575757575758,
+      "sensibilidad": 0.25,
+      "especificidad": 0.7313432835820896,
+      "precision": 0.3076923076923077,
+      "auc": 0.5415111940298508,
+      "f1_macro": 0.4879310344827586,
+      "por_clase": {
+        "sin_pCR": {
+          "precision": 0.6712328767123288,
+          "recall": 0.7313432835820896,
+          "f1-score": 0.7,
+          "support": 67.0
+        },
+        "con_pCR": {
+          "precision": 0.3076923076923077,
+          "recall": 0.25,
+          "f1-score": 0.27586206896551724,
+          "support": 32.0
+        },
+        "accuracy": 0.5757575757575758,
+        "macro avg": {
+          "precision": 0.48946259220231825,
+          "recall": 0.4906716417910448,
+          "f1-score": 0.4879310344827586,
+          "support": 99.0
+        },
+        "weighted avg": {
+          "precision": 0.5537248139987866,
+          "recall": 0.5757575757575758,
+          "f1-score": 0.5629049111807732,
+          "support": 99.0
+        }
+      }
+    }
+  },
+  "comparaciones": [
+    {
+      "nombre": "V2 normal",
+      "media": 0.5147275000699993,
+      "de": 0.018080854048382434,
+      "folds": [
+        0.5,
+        0.5418122046435176,
+        0.5159490472681335,
+        0.4964597701149426,
+        0.5194164783234025
+      ]
+    },
+    {
+      "nombre": "V7 normal",
+      "media": 0.5326373033848986,
+      "de": 0.043615670051997214,
+      "folds": [
+        0.5202620967741935,
+        0.5096568728169304,
+        0.6093272976102747,
+        0.5021609195402299,
+        0.5217793301828642
+      ]
+    },
+    {
+      "nombre": "V2 ponderada",
+      "media": 0.5249973209310937,
+      "de": 0.06500374916666869,
+      "folds": [
+        0.4727822580645162,
+        0.5540373946989932,
+        0.6131171702284453,
+        0.4509425287356322,
+        0.5341072529278816
+      ]
+    },
+    {
+      "nombre": "V7 ponderada",
+      "media": 0.5026535563810611,
+      "de": 0.016012420814694475,
+      "folds": [
+        0.4806451612903226,
+        0.4943497020752003,
+        0.5175281608590379,
+        0.5022528735632185,
+        0.5184918841175261
+      ]
+    },
+    {
+      "nombre": "V7 normal · lr 0,0003",
+      "media": 0.5212581112768236,
+      "de": 0.03941496041592273,
+      "folds": [
+        0.5275201612903225,
+        0.5024655845490035,
+        0.5873249815770081,
+        0.4910344827586207,
+        0.4979453462091637
+      ]
+    },
+    {
+      "nombre": "V8 normal",
+      "media": 0.5431210419493299,
+      "de": 0.04842327027980465,
+      "folds": [
+        0.4700604838709677,
+        0.5673926443394288,
+        0.5721654911043267,
+        0.5182528735632184,
+        0.5877337168687076
+      ]
+    }
+  ],
+  "particiones_disjuntas": true,
+  "auditoria": "Métricas contrastadas con predicciones guardadas; sin repetir inferencia de test.",
+  "historial": [
+    {
+      "epoca": 1,
+      "train_eval_loss": 0.6052254510668944,
+      "val_loss": 0.6069724511794835,
+      "train_auc_paciente": 0.5330957739434858,
+      "val_auc_paciente": 0.4558467741935483
+    },
+    {
+      "epoca": 2,
+      "train_eval_loss": 0.6117048150723567,
+      "val_loss": 0.6126228687638878,
+      "train_auc_paciente": 0.5231557889472368,
+      "val_auc_paciente": 0.4550403225806451
+    },
+    {
+      "epoca": 3,
+      "train_eval_loss": 0.6072728677024062,
+      "val_loss": 0.6083272522126222,
+      "train_auc_paciente": 0.5597336834208553,
+      "val_auc_paciente": 0.475
+    },
+    {
+      "epoca": 4,
+      "train_eval_loss": 0.6095068627044019,
+      "val_loss": 0.6100057903387518,
+      "train_auc_paciente": 0.5829082270567643,
+      "val_auc_paciente": 0.5266129032258065
+    },
+    {
+      "epoca": 5,
+      "train_eval_loss": 0.6049580359679404,
+      "val_loss": 0.6059973761234825,
+      "train_auc_paciente": 0.600631407851963,
+      "val_auc_paciente": 0.5477822580645161
+    },
+    {
+      "epoca": 6,
+      "train_eval_loss": 0.6044764683417825,
+      "val_loss": 0.6053870443019536,
+      "train_auc_paciente": 0.6006439109777444,
+      "val_auc_paciente": 0.5760080645161291
+    },
+    {
+      "epoca": 7,
+      "train_eval_loss": 0.5952913894107835,
+      "val_loss": 0.5988271634511084,
+      "train_auc_paciente": 0.6094898724681169,
+      "val_auc_paciente": 0.5600806451612903
+    },
+    {
+      "epoca": 8,
+      "train_eval_loss": 0.5988535992916023,
+      "val_loss": 0.6049316665609278,
+      "train_auc_paciente": 0.611877969492373,
+      "val_auc_paciente": 0.5472782258064517
+    },
+    {
+      "epoca": 9,
+      "train_eval_loss": 0.5909815761838578,
+      "val_loss": 0.6004752026494228,
+      "train_auc_paciente": 0.6158352088022006,
+      "val_auc_paciente": 0.5481854838709679
+    },
+    {
+      "epoca": 10,
+      "train_eval_loss": 0.5903690614878879,
+      "val_loss": 0.6027267723048595,
+      "train_auc_paciente": 0.6351587896974243,
+      "val_auc_paciente": 0.5561491935483871
+    },
+    {
+      "epoca": 11,
+      "train_eval_loss": 0.5859631597757584,
+      "val_loss": 0.6005675572380492,
+      "train_auc_paciente": 0.6457426856714179,
+      "val_auc_paciente": 0.5577620967741935
+    },
+    {
+      "epoca": 12,
+      "train_eval_loss": 0.5803457424784648,
+      "val_loss": 0.6012203005182558,
+      "train_auc_paciente": 0.6503313328332083,
+      "val_auc_paciente": 0.553024193548387
+    },
+    {
+      "epoca": 13,
+      "train_eval_loss": 0.5810267512473577,
+      "val_loss": 0.6016514075533141,
+      "train_auc_paciente": 0.6711115278819705,
+      "val_auc_paciente": 0.5669354838709677
+    },
+    {
+      "epoca": 14,
+      "train_eval_loss": 0.5766985596879893,
+      "val_loss": 0.59954180012901,
+      "train_auc_paciente": 0.6730057514378596,
+      "val_auc_paciente": 0.5662298387096774
+    },
+    {
+      "epoca": 15,
+      "train_eval_loss": 0.5735052098611648,
+      "val_loss": 0.6012683524413602,
+      "train_auc_paciente": 0.6823455863965993,
+      "val_auc_paciente": 0.5589717741935484
+    }
+  ],
+  "fuentes": [
+    {
+      "archivo": "models/importados_entrega_v8/models/final_train_v8/normal/historial.csv",
+      "sha256": "a2bdd7251660d900f54d725dee79e5769b74effa9582c5ca64db22c08630d0c1"
+    },
+    {
+      "archivo": "models/importados_entrega_v8/models/final_train_v8/normal/metricas_internas_umbral.json",
+      "sha256": "87c44944baeaa6af0e61f5541cecdbdeb4f90f87925216a41becb3f490d71bc5"
+    },
+    {
+      "archivo": "models/importados_entrega_v8/models/test_final_v8/metricas_test.json",
+      "sha256": "a1ecf220abb85992b6bf5baa252c25a16bbb555a6b269f0f1f751a8e89741e3d"
+    },
+    {
+      "archivo": "models/importados_entrega_v8/models/test_final_v8/metricas_cohortes.json",
+      "sha256": "9d59d8bcdcb3a6811480aa8dd9aae8abeff53b4914ce185d9ee955370e4eaaca"
+    },
+    {
+      "archivo": "models/importados_entrega_v8/models/test_final_v8/protocolo_fijado.json",
+      "sha256": "469ba898b62604896e31bba47f48240e8a1c37e885e125dc000e89e7c31dbb61"
+    },
+    {
+      "archivo": "models/importados_entrega_v8/models/final_train_v8/particion_pacientes.csv",
+      "sha256": "4cfdbd17a0fb860c32bca400902801aae825b87449cafcba7bdc2c975986e898"
+    },
+    {
+      "archivo": "models/importados_entrega_v8/models/comparacion_v2_v7/resultados_por_fold.csv",
+      "sha256": "6343920280630989ceb198d835a35f8657ed97683b876838c1cc900859c30cb7"
+    },
+    {
+      "archivo": "models/importados_entrega_v8/models/cv_v7_lr3e4/resultados_por_fold.csv",
+      "sha256": "9ae594338c9849b9760a583f32039e2be9d6a149fc0a17b4c0140b27ce9c5d5e"
+    },
+    {
+      "archivo": "models/importados_entrega_v8/models/cv_v8_realce/resultados_por_fold.csv",
+      "sha256": "ad1baa80b9f7e2ed6f36cecea377b9138fb086002616b1e0e95034ed969e3658"
+    }
+  ]
+}

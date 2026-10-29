@@ -43,7 +43,7 @@ def main():
     with tempfile.TemporaryDirectory(dir=raiz / 'models') as tmp:
         carpeta = Path(tmp) / 'app_modelo_v8'
         carpeta.mkdir()
-        for nombre in ('mejor_modelo.pt', 'configuracion.json', 'metricas.json'):
+        for nombre in ('mejor_modelo.pt', 'configuracion.json', 'metricas.json', 'metricas_internas_umbral.json'):
             shutil.copy2(origen / nombre, carpeta / nombre)
         (carpeta / 'app_manifest.json').write_text(json.dumps(manifiesto, ensure_ascii=False, indent=2))
         carpeta.rename(paquete)

@@ -118,6 +118,12 @@ class Predictor:
         self.modelo, self.umbral = modelo.eval(), float(umbral)
         self.lock = threading.Lock()
         metricas = json.loads((carpeta / 'metricas.json').read_text())
+        ajustadas = carpeta / 'metricas_internas_umbral.json'
+        if ajustadas.is_file():
+            internas = json.loads(ajustadas.read_text())
+            if internas.get('umbral') != self.umbral or internas.get('auc') != metricas.get('auc'):
+                raise ValueError('Las métricas internas no corresponden al umbral y modelo del paquete.')
+            metricas.update(internas)
         self.info = dict(disponible=True, modelo=config['modelo'], sha256=checksum, umbral=self.umbral,
                          estado_modelo=manifiesto.get('estado_modelo', 'Candidato provisional'),
                          parametros=contar_parametros(modelo)[0],
