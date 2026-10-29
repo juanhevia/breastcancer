@@ -1,0 +1,3 @@
+# Instalar en el entorno cancer sin reinstalar ni cambiar su PyTorch ROCm.
+fastapi>=0.115,<1
+uvicorn>=0.30,<1

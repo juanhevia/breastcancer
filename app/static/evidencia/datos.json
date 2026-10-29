@@ -1,0 +1,138 @@
+{
+  "version": 1,
+  "fecha": "2026-10-28",
+  "modelo": "v7",
+  "alcance": "Evidencia histórica de desarrollo; no es el test final ni cambia con el modelo conectado.",
+  "auc_interna": 0.5793346774193548,
+  "pacientes_validacion": 219,
+  "mejor_epoca": 6,
+  "historial": [
+    {
+      "epoca": 1,
+      "train_eval_loss": 0.6077434348385007,
+      "val_loss": 0.6087643968219181,
+      "train_auc_paciente": 0.5167604401100275,
+      "val_auc_paciente": 0.477016129032258
+    },
+    {
+      "epoca": 2,
+      "train_eval_loss": 0.6106830407582621,
+      "val_loss": 0.6109475700111424,
+      "train_auc_paciente": 0.5345398849712428,
+      "val_auc_paciente": 0.5171370967741936
+    },
+    {
+      "epoca": 3,
+      "train_eval_loss": 0.6079821739584388,
+      "val_loss": 0.607075123642959,
+      "train_auc_paciente": 0.5371467866966742,
+      "val_auc_paciente": 0.5305443548387097
+    },
+    {
+      "epoca": 4,
+      "train_eval_loss": 0.6094483549375215,
+      "val_loss": 0.6089971514873731,
+      "train_auc_paciente": 0.5650287571892972,
+      "val_auc_paciente": 0.5428427419354839
+    },
+    {
+      "epoca": 5,
+      "train_eval_loss": 0.6083426922474676,
+      "val_loss": 0.6075997553281792,
+      "train_auc_paciente": 0.5773130782695673,
+      "val_auc_paciente": 0.5682459677419355
+    },
+    {
+      "epoca": 6,
+      "train_eval_loss": 0.6064974587180596,
+      "val_loss": 0.6057285264557039,
+      "train_auc_paciente": 0.5895848962240561,
+      "val_auc_paciente": 0.5793346774193548
+    },
+    {
+      "epoca": 7,
+      "train_eval_loss": 0.6002749702350396,
+      "val_loss": 0.5996100529551179,
+      "train_auc_paciente": 0.5943923480870217,
+      "val_auc_paciente": 0.5746975806451613
+    },
+    {
+      "epoca": 8,
+      "train_eval_loss": 0.6013875564139025,
+      "val_loss": 0.6049767210193435,
+      "train_auc_paciente": 0.5952488122030508,
+      "val_auc_paciente": 0.5421370967741936
+    },
+    {
+      "epoca": 9,
+      "train_eval_loss": 0.5995664851607518,
+      "val_loss": 0.6034388741766327,
+      "train_auc_paciente": 0.6040447611902976,
+      "val_auc_paciente": 0.5349798387096774
+    },
+    {
+      "epoca": 10,
+      "train_eval_loss": 0.6038668346753443,
+      "val_loss": 0.6088230434297316,
+      "train_auc_paciente": 0.6127281820455115,
+      "val_auc_paciente": 0.5325604838709678
+    },
+    {
+      "epoca": 11,
+      "train_eval_loss": 0.5959929947929848,
+      "val_loss": 0.6028985954268963,
+      "train_auc_paciente": 0.6243310827706927,
+      "val_auc_paciente": 0.5294354838709677
+    },
+    {
+      "epoca": 12,
+      "train_eval_loss": 0.597097476495838,
+      "val_loss": 0.605796120413268,
+      "train_auc_paciente": 0.6253625906476619,
+      "val_auc_paciente": 0.5300403225806452
+    },
+    {
+      "epoca": 13,
+      "train_eval_loss": 0.5922532509091593,
+      "val_loss": 0.601401449122346,
+      "train_auc_paciente": 0.6339334833708428,
+      "val_auc_paciente": 0.5450604838709677
+    },
+    {
+      "epoca": 14,
+      "train_eval_loss": 0.5864622914256238,
+      "val_loss": 0.6010962375674025,
+      "train_auc_paciente": 0.6431670417604402,
+      "val_auc_paciente": 0.5306451612903226
+    },
+    {
+      "epoca": 15,
+      "train_eval_loss": 0.5892195265741432,
+      "val_loss": 0.6043045697469616,
+      "train_auc_paciente": 0.6458552138034508,
+      "val_auc_paciente": 0.535383064516129
+    }
+  ],
+  "fuentes": [
+    {
+      "archivo": "models/importados_chat_20261027/v7_original/normal/predicciones_validacion.csv",
+      "sha256": "d2d9d6a8e74d5b2038c94a89b8389ff771d9f62f03487f16d888244aa912b5e4"
+    },
+    {
+      "archivo": "docs/memoria/figuras/auc_cv.png",
+      "sha256": "dcbbd57d0e043ba13d202f9dcacf27b2c8cc1aed27d2598e608042df30512ddf"
+    },
+    {
+      "archivo": "docs/memoria/figuras/auc_v7.png",
+      "sha256": "bf50fb984f326b1babacbbbe7b658cb30498c782b3f589d15a1cf055dede74b7"
+    },
+    {
+      "archivo": "docs/memoria/figuras/perdida_v7.png",
+      "sha256": "e1f13f69e5858ecc00c869bca50f28db30dcacb85c27e264a92105a56e5e4b83"
+    },
+    {
+      "archivo": "models/importados_chat_20261023/v7/normal/historial.csv",
+      "sha256": "bf908e9e5ea012d00545e4adb523afca959aabf6a623a86d4ab5fa52275b7971"
+    }
+  ]
+}
