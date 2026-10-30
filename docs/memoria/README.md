@@ -19,6 +19,8 @@ El generador usa las figuras existentes y los datos agregados de la web. No
 entrena, no carga pesos ni evalúa imágenes. `fuentes.json` conserva los hashes.
 Una edición manual del Word debe trasladarse al Markdown antes de regenerarlo.
 
-Pendiente para la entrega completa: publicación y comprobación de la URL de la
-app, presentación de cinco diapositivas y revisión de los datos académicos de
-portada. El documento declara el alcance local de la aplicación; no inventa URL.
+La aplicación ya está publicada en https://breastcancer-bn0a.onrender.com/.
+La presentación del autor está en `presentations/entrega/presentacion.pdf`.
+El informe conserva los resultados experimentales; su versión Word todavía
+requiere incorporar el despliegue público y el complemento de variables,
+documentado en `docs/complemento_variables.md`.

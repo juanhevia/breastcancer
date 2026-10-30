@@ -39,8 +39,8 @@ que acabaran correctamente. No se han reconstruido métricas ni curvas ROC ausen
 V5 conserva tres épocas y su mejor validación, pero no llegó a exportar predicciones finales.
 
 Se han regenerado las figuras disponibles de v3, v4, v5 y la referencia v2 en
-`graficas/normal/` y `graficas/ponderada/`, una gráfica por archivo, en PNG y PDF.
-Los paneles anteriores se conservan en `graficas/formato_anterior/`.
+`graficas/normal/` y `graficas/ponderada/`, una gráfica por archivo, en PNG.
+Se retiraron los paneles duplicados del formato anterior. Se conservan los historiales, métricas y gráficas individuales de cada experimento.
 Sin predicciones guardadas solo se pueden rehacer pérdida y AUC por época;
 esto ocurre en v5, v4 ponderada y la copia local de la referencia v2.
 

@@ -3,18 +3,28 @@
 Proyecto docente con una CNN 2D desde cero. Entrada: PRE, EARLY y LATE, en ese
 orden, apiladas en un tensor de 3 × 256 × 256 y divididas entre 255.
 
+## Acceso a la entrega
+
+- [Aplicación pública](https://breastcancer-bn0a.onrender.com/).
+- [Presentación del autor en PDF](presentations/entrega/presentacion.pdf).
+- [Guía de acceso y uso](output/pdf/Entrega_BreastDCEDL_Enlaces_y_uso.pdf).
+- Modelo de imágenes: v8, pesos y configuración en `app/paquetes/v8/`.
+
+Las secciones de experimentos conservan el proceso de desarrollo y sus resultados.
+No indican que sea necesario volver a entrenar para utilizar la web.
+
 ## Organización
 
 ```text
 .github/workflows/          Comprobaciones automáticas
 app/                        Interfaz HTML y servidor Python de inferencia
-docs/                       PDF, guía y revisión del código
+docs/                       Enunciado, guías, experimentos y resultados
 models/                     Pesos y resultados de cada ejecución
 notebooks/                  Exploración y análisis
 presentations/              Presentación final
 src/
   data/                     utils_caso.py, descargar_datos.py, ver_muestras.py
-  models/modelo.py          Arquitecturas propias: baseline, v2, v3 y v5
+  models/modelo.py          Arquitecturas propias y variantes v2 a v8
   training/entrenar.py      Entrenamiento por épocas
 tests/                      Comprobaciones del entrenamiento
 .env.example                Explica la configuración del entorno
@@ -262,7 +272,7 @@ historiales, métricas y gráficas disponibles. El índice distingue pruebas cor
 entrenamientos finalizados e intentos sin cierre registrado.
 
 Para revisar integridad, capacidad de aprendizaje y resultados por cohorte,
-consulta el [diagnóstico y siguiente control de v2](docs/diagnostico_y_siguiente_control.md).
+se conserva el módulo de diagnóstico:
 `python3 -m src.training.diagnostico` analiza metadatos y predicciones existentes;
 `--memorizacion` añade una prueba pequeña sobre las mismas imágenes entrenadas,
 sin valor como estimación de generalización. El nuevo control `--experimento v2_lr`
@@ -351,8 +361,7 @@ python -m src.training.graficas models/NOMBRE_DE_LA_EJECUCION
 También se admite una carpeta `normal/` o `ponderada/`. Con configuración e
 historial se pueden rehacer pérdida y AUC. ROC, precisión–sensibilidad y matriz
 requieren además las predicciones de validación y sus métricas. No se reconstruyen
-predicciones ausentes. Los tres paneles antiguos, si existen en `graficas/`, se
-conservan en `graficas/formato_anterior/`.
+predicciones ausentes. Se conservan las gráficas individuales en PNG; se han retirado los paneles duplicados antiguos.
 
 Para diagnósticos adicionales:
 
@@ -424,7 +433,7 @@ inferencia están en `app/paquetes/v8/`. [Instrucciones de despliegue](app/RENDE
 ## Entrega
 
 - [Aplicación pública](https://breastcancer-bn0a.onrender.com/).
-- [Presentación visual de cinco diapositivas](presentations/entrega/BreastDCEDL_UAX_5_equilibrada.pptx).
+- [Presentación exportada por el autor](presentations/entrega/presentacion.pdf).
 - [Memoria](docs/memoria/Memoria_BreastDCEDL_Juan_Hevia.docx): pendiente de actualizar el enlace público y el complemento clínico.
 - [Complemento de variables: método y limitaciones](docs/complemento_variables.md).
 
