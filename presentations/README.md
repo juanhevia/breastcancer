@@ -1,6 +1,6 @@
 # Presentación BreastDCEDL
 
-`entrega/BreastDCEDL_UAX_5_visual.pptx` contiene cinco diapositivas de cuerpo,
+`entrega/BreastDCEDL_UAX_5_equilibrada.pptx` contiene cinco diapositivas de cuerpo,
 reutilizando la diapositiva blanca con el logotipo superior de `PPT_Template.pptx`.
 Los textos, la tabla y las gráficas son editables. La figura de resonancia procede
 de la documentación BreastDCEDL (CC BY-NC 4.0). Las notas conservan los detalles numéricos. Cada diapositiva incluye notas del orador.

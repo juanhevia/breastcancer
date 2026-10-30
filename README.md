@@ -424,7 +424,7 @@ inferencia están en `app/paquetes/v8/`. [Instrucciones de despliegue](app/RENDE
 ## Entrega
 
 - [Aplicación pública](https://breastcancer-bn0a.onrender.com/).
-- [Presentación visual de cinco diapositivas](presentations/entrega/BreastDCEDL_UAX_5_visual.pptx).
+- [Presentación visual de cinco diapositivas](presentations/entrega/BreastDCEDL_UAX_5_equilibrada.pptx).
 - [Memoria](docs/memoria/Memoria_BreastDCEDL_Juan_Hevia.docx): pendiente de actualizar el enlace público y el complemento clínico.
 - [Complemento de variables: método y limitaciones](docs/complemento_variables.md).
 
