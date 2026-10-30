@@ -12,12 +12,10 @@ for (const boton of document.querySelectorAll('[data-stage]')) boton.addEventLis
   ['stage-index','stage-title','stage-text','stage-shape'].forEach((id,i)=>document.getElementById(id).textContent=e[i]);
 });
 const graficas = {
-  errores:{file:'errores_test.png',scope:'V8 FINAL · EJEMPLOS DESCRIPTIVOS DE TEST',title:'Dos errores y sus imágenes',alt:'Tres fases del falso positivo de mayor puntuación y del falso negativo de menor puntuación; un corte central de cada paciente.',caption:'Selección posterior al test: falso positivo de mayor puntuación y falso negativo de menor puntuación. Corte central disponible; escala original. Fuente: BreastDCEDL, adaptación docente, CC BY-NC 4.0.',reading:'Las puntuaciones 0,376 y 0,258 promedian todos los cortes de cada paciente. Las imágenes no explican causalmente el error y no se usaron para modificar el modelo.'},
-  auc:{file:'auc.png',scope:'V8 FINAL · VALIDACIÓN INTERNA',title:'Aprendizaje a lo largo de las épocas',alt:'AUC de entrenamiento y validación interna de v8 en las 15 épocas; selección de la época 6.',caption:'Todas las épocas. La línea señala el checkpoint elegido por el máximo AUC interno por paciente.',reading:'La brecha de AUC crece de 0,025 en la época 6 a 0,123 en la 15. Se conserva la época 6; no se selecciona usando test.'},
-  loss:{file:'perdida.png',scope:'V8 FINAL · ENTRENAMIENTO Y VALIDACIÓN',title:'Pérdida a lo largo de las épocas',alt:'Pérdida BCE por corte de entrenamiento y validación de v8.',caption:'Ambos conjuntos evaluados sin aumentos y en modo evaluación. Menor pérdida es mejor.',reading:'La pérdida valora las probabilidades; el AUC, su ordenación. El criterio de selección fue el AUC por paciente, no el mínimo de pérdida.'},
-  roc:{file:'roc_test.png',scope:'V8 FINAL · 176 PACIENTES DE TEST',title:'Discriminación en pacientes reservadas',alt:'ROC de test con AUC 0,504 e intervalo del 95 % 0,410 a 0,597.',caption:'Una probabilidad media por paciente. IC 95 % por bootstrap estratificado: 2.000 remuestreos, semilla 42.',reading:'El intervalo incluye 0,5. Este test no demuestra discriminación útil. Cambiar el umbral no aumenta el AUC.'},
-  confusion:{file:'matriz_confusion_test.png',scope:'V8 FINAL · UMBRAL FIJO 0,356243176',title:'Aciertos y errores en test',alt:'Matriz de test: 10 verdaderos positivos, 90 verdaderos negativos, 33 falsos positivos y 43 falsos negativos.',caption:'El umbral maximiza F1 macro exclusivamente en validación interna. No se reajustó con test.',reading:'Detecta 10 de las 53 pacientes con pCR (18,9 %), con 33 falsos positivos. La precisión de las predicciones positivas es 23,3 %.'},
-  calibracion:{file:'calibracion_test.png',scope:'V8 FINAL · CALIBRACIÓN OBSERVADA EN TEST',title:'Puntuación frente a frecuencia observada',alt:'Diagrama de calibración de v8 en cinco grupos por cuantiles del test.',caption:'Cinco grupos de puntuaciones por cuantiles. Brier: 0,2124. No se ha ajustado un calibrador con test.',reading:'La diagonal representa coincidencia entre puntuación media y frecuencia observada. Con 176 pacientes hay incertidumbre; estas puntuaciones no son probabilidades clínicas validadas.'},
+  auc:{file:'auc.png?v=2',scope:'V8 FINAL · VALIDACIÓN INTERNA',title:'Aprendizaje a lo largo de las épocas',alt:'AUC de entrenamiento y validación interna de v8 en las 15 épocas; selección de la época 6.',caption:'Escala completa 0–1. Un AUC mayor es mejor. La línea vertical marca la época 6, elegida por el máximo AUC interno por paciente.',reading:'La brecha de AUC crece de 0,025 en la época 6 a 0,123 en la 15. Se conserva la época 6; no se selecciona usando test.'},
+  loss:{file:'perdida.png?v=2',scope:'V8 FINAL · ENTRENAMIENTO Y VALIDACIÓN',title:'Pérdida a lo largo de las épocas',alt:'Pérdida BCE por corte de entrenamiento y validación de v8.',caption:'Escala de pérdida 0,50–0,70, distinta de la escala del AUC. Ambos conjuntos evaluados sin aumentos; menor pérdida es mejor.',reading:'La pérdida valora las probabilidades; el AUC, su ordenación. El criterio de selección fue el AUC por paciente, no el mínimo de pérdida.'},
+  roc:{file:'roc_interna_comparada.png',scope:'DESARROLLO · 219 PACIENTES DE VALIDACIÓN INTERNA',title:'Imágenes y variables: discriminación interna',alt:'ROC interna de imágenes, variables y combinación, con AUC 0,576, 0,689 y 0,717.',caption:'Las tres curvas usan las mismas pacientes. La combinación es un análisis exploratorio posterior; no una evaluación independiente.',reading:'El subtipo y la edad mejoran la discriminación interna. La mejora debe comprobarse en pacientes independientes; la curva no mide calibración.'},
+  confusion:{file:'matriz_interna.png',scope:'V8 · VALIDACIÓN INTERNA · UMBRAL 0,356243176',title:'Aciertos y errores de respuesta al tratamiento',alt:'Matriz interna: 27 verdaderos positivos, 109 verdaderos negativos, 46 falsos positivos y 37 falsos negativos.',caption:'Positivo significa pCR: respuesta patológica completa. No clasifica presencia o ausencia de cáncer.',reading:'Detecta 27 de las 64 respuestas completas. Un falso positivo predice respuesta completa cuando queda enfermedad residual; un falso negativo omite una respuesta completa real.'},
   cv:{file:'comparacion_cv.png',scope:'DESARROLLO · CINCO FOLDS EXTERNOS',title:'Comparación de arquitecturas y pérdidas',alt:'AUC por fold y media más menos desviación de v2, v7 y v8.',caption:'Cada punto es un fold; el rombo indica la media y la barra ± desviación estándar, no un intervalo de confianza.',reading:'V8 normal obtiene 0,543 ± 0,048 frente a 0,533 ± 0,044 de v7 normal. La diferencia es pequeña y no demuestra superioridad sólida.'}
 };
 for(const boton of document.querySelectorAll('[data-chart]')) boton.addEventListener('click',()=>{
@@ -47,3 +45,28 @@ for(const boton of document.querySelectorAll('[data-transform]'))boton.addEventL
   const property=boton.dataset.transform==='flip'?'--mirror':'--rotation';
   document.getElementById('phantoms').style.setProperty(property,boton.dataset.transform==='flip'?(activo?'-1':'1'):(activo?'10deg':'0deg'));
 });
+
+document.getElementById('reset-transform').addEventListener('click',()=>{
+  for(const boton of document.querySelectorAll('[data-transform]'))boton.setAttribute('aria-pressed','false');
+  document.getElementById('phantoms').style.setProperty('--mirror','1');
+  document.getElementById('phantoms').style.setProperty('--rotation','0deg');
+});
+
+// Demostración geométrica: solo modifica la vista, nunca los archivos de entrada.
+const giro = document.getElementById('rotation-angle');
+function mostrarGiro(){
+  document.getElementById('rotation-value').textContent = `${giro.value}°`;
+  giro.setAttribute('aria-valuetext', `${giro.value} grados`);
+  document.getElementById('phantoms').style.setProperty('--rotation',`${giro.value}deg`);
+}
+giro.addEventListener('input', mostrarGiro);
+document.getElementById('reset-transform').addEventListener('click',()=>{giro.value=0;mostrarGiro();});
+// Aparición única y decorativa; el contenido sigue visible sin JavaScript.
+if ('IntersectionObserver' in window) {
+  const entradas = new IntersectionObserver(items=>{
+    for (const item of items) if (item.isIntersecting) {
+      item.target.classList.add('section-arrived'); entradas.unobserve(item.target);
+    }
+  },{threshold:0.08});
+  document.querySelectorAll('.content-section,.preprocessing-section,.architecture-section,.evidence-section').forEach(el=>entradas.observe(el));
+}

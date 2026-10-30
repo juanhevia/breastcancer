@@ -18,6 +18,45 @@ from sklearn.metrics import confusion_matrix, f1_score, roc_auc_score
 RAIZ = Path(__file__).resolve().parents[1]
 
 
+def graficar_auc(hist, epoca, destino):
+    """Escala completa del AUC; conserva los valores registrados por paciente."""
+    with plt.rc_context({'font.family': 'DejaVu Sans', 'font.size': 11,
+                         'axes.spines.top': False, 'axes.spines.right': False}):
+        fig, ax = plt.subplots(figsize=(8, 3.6), layout='constrained')
+        ax.plot(hist.epoca, hist.train_auc_paciente, label='Entrenamiento', color='#185c8a', lw=2)
+        ax.plot(hist.epoca, hist.val_auc_paciente, label='Validación interna', color='#c96525', lw=2)
+        ax.axhline(.5, color='#9a9a9a', ls='--', lw=1, label='Referencia AUC = 0,5')
+        ax.axvline(epoca, ls=':', color='#666666', label=f'Época elegida {epoca}')
+        ax.set(title='V8 · AUC por época', xlabel='Época', ylabel='ROC AUC por paciente',
+               xlim=(1, len(hist)), ylim=(0, 1))
+        ax.set_xticks([1, 3, 6, 9, 12, 15])
+        ax.set_yticks(np.linspace(0, 1, 6))
+        ax.grid(alpha=.18)
+        ax.legend(frameon=False, fontsize=9, loc='lower right')
+        fig.savefig(destino / 'auc.png', dpi=180)
+        plt.close(fig)
+
+
+def graficar_perdida(hist, epoca, destino):
+    """Escala 0,50–0,70 para el historial final v8, sin alterar las pérdidas."""
+    with plt.rc_context({'font.family': 'DejaVu Sans', 'font.size': 11,
+                         'axes.spines.top': False, 'axes.spines.right': False}):
+        fig, ax = plt.subplots(figsize=(8, 3.6), layout='constrained')
+        ax.plot(hist.epoca, hist.train_eval_loss, label='Entrenamiento', color='#185c8a', lw=2)
+        ax.plot(hist.epoca, hist.val_loss, label='Validación interna', color='#c96525', lw=2)
+        ax.axvline(epoca, ls=':', color='#666666', label=f'Época elegida {epoca}')
+        # Amplía el rango si un historial futuro excede estos límites: nunca recorta datos.
+        minimo = min(.50, float(hist[['train_eval_loss', 'val_loss']].min().min()) - .01)
+        maximo = max(.70, float(hist[['train_eval_loss', 'val_loss']].max().max()) + .01)
+        ax.set(title='V8 · Pérdida por época', xlabel='Época', ylabel='Pérdida BCE por corte',
+               xlim=(1, len(hist)), ylim=(minimo, maximo))
+        ax.set_xticks([1, 3, 6, 9, 12, 15])
+        ax.grid(alpha=.18)
+        ax.legend(frameon=False, fontsize=9, loc='upper right')
+        fig.savefig(destino / 'perdida.png', dpi=180)
+        plt.close(fig)
+
+
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--origen', type=Path, default=RAIZ / 'models')
@@ -65,20 +104,8 @@ def main():
     destino.mkdir(parents=True, exist_ok=True)
     plt.rcParams.update({'font.family': 'DejaVu Sans', 'font.size': 11,
                          'axes.spines.top': False, 'axes.spines.right': False})
-    for nombre, c1, c2, titulo, ylabel in [
-        ('auc', 'train_auc_paciente', 'val_auc_paciente', 'V8 · AUC por época', 'ROC AUC por paciente'),
-        ('perdida', 'train_eval_loss', 'val_loss', 'V8 · Pérdida por época', 'Pérdida BCE por corte'),
-    ]:
-        fig, ax = plt.subplots(figsize=(8, 3.6), layout='constrained')
-        ax.plot(hist.epoca, hist[c1], label='Entrenamiento', color='#185c8a', lw=2)
-        ax.plot(hist.epoca, hist[c2], label='Validación interna', color='#c96525', lw=2)
-        ax.axvline(epoca, ls=':', color='#666666', label=f'Época elegida {epoca}')
-        ax.set(title=titulo, xlabel='Época', ylabel=ylabel, xlim=(1, len(hist)))
-        ax.set_xticks([1, 3, 6, 9, 12, 15])
-        ax.grid(alpha=.18)
-        ax.legend(frameon=False, fontsize=9)
-        fig.savefig(destino / f'{nombre}.png', dpi=180)
-        plt.close(fig)
+    graficar_auc(hist, epoca, destino)
+    graficar_perdida(hist, epoca, destino)
     comparaciones = []
     for ensayo in ('comparacion_v2_v7', 'cv_v7_lr3e4', 'cv_v8_realce'):
         df = pd.read_csv(origen / ensayo / 'resultados_por_fold.csv')

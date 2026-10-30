@@ -1,0 +1,59 @@
+/* Tema nocturno. Las imágenes y figuras científicas conservan sus colores originales. */
+:root{color-scheme:dark;--ink:#e8f1fa;--muted:#a8b9cb;--accent:#68d9cb;--line:#2a4055;--paper:#08121e;--lime:#8ee8dc;background:var(--paper);color:var(--ink)}
+body{background:#08121e;color:#e8f1fa}
+.shell{background:radial-gradient(ellipse at 90% 0,#14354975,transparent 45%),#0b1623;min-height:100vh}
+.sidebar{background:linear-gradient(180deg,#071622,#07111b);border-right:1px solid #22394c}
+.topbar{background:#0c1a28;border-bottom-color:#2a4055}.breadcrumb,.top-tag{color:#a8bdd0}.breadcrumb strong{color:#e2edf8}
+.nav-link{color:#adbed0}.nav-link:hover{background:#182d40;color:#fff}.nav-link.active{background:#173b48;color:#9ff3e7;border-left-color:#71e5d3}
+.nav-label,.brand small,.author small{color:#9bb2c5}.brand-icon{background:#8ee8dc;color:#103b43}.sidebar-bottom>p{color:#bfd0df}.mini-pill{color:#b9cbd9;border-color:#365169}
+.motion-toggle,.icon-button{background:#142a3d;color:#d9eaf6;border-color:#38516a}.motion-toggle:hover,.icon-button:hover{background:#234157}
+.intro{background:radial-gradient(ellipse at 85% 30%,#225b6970,transparent 65%),linear-gradient(120deg,#122b42,#102330);border:1px solid #365267;border-radius:18px;padding:30px}
+.intro h1{color:#f1f7ff}.intro .eyebrow,.eyebrow,.card-heading .eyebrow{color:#87d9d0}.intro p:not(.eyebrow){color:#bdd0df}.art-caption{color:#a8c4d6}
+.card,.guide-item,.reading-card,.reading-card:nth-child(2),.reading-card:nth-child(3),.faq,.architecture-notes article,.chart-card,.evidence-bottom,.epoch-inspector{background:#122333;border-color:#2c4358;box-shadow:0 12px 30px #0000001c}
+.card:hover{border-color:#49677f}.notice{background:#302a20;border-color:#625237;color:#f0d9ab}.notice strong{color:#ffe1aa}
+.subtext,.section-description,.section-kicker,.research-lead,.preprocess-footnote{color:#b4c5d5}
+.steps li,.steps small{color:#a7b9ca}.steps li:after{background:#30465b}.steps li>span{background:#172c3e;border-color:#405a70;color:#b5cbdc}.steps .current{color:#e8f1fa}.steps .current>span{background:#70dfce;color:#092c34;border-color:#70dfce}.steps .complete>span{background:#1b4948;color:#9af5d8;border-color:#39847c}
+.dropzone{background:#0b1c2a;border-color:#4a728b}.dropzone>strong{color:#e7f1fa}.dropzone.dragging{background:#153e47;border-color:#83e2d7}.drop-or,.file-spec,.selection-row p{color:#adbfce}.upload-icon{background:#193d4b;color:#9ceadd}
+.primary{background:#80dfd1;color:#082a31;border-color:#80dfd1}.primary:hover:not(:disabled){background:#acf4e8;color:#082a31}.primary:disabled{background:#253c49;color:#91a5b5;border-color:#344d5d;opacity:1;cursor:not-allowed}
+.secondary{background:#183146;border-color:#44657d;color:#e4eff8}.secondary:hover{background:#24465e}.text-button,.section-link{color:#8ee8dc}
+.count,.neutral-badge,.neutral-badge.ready,.phase-tags>span,.class-tag{background:#183c47;color:#b3f3e8;border-color:#376571}
+.file-help p,.privacy-note,.file-list li,.viewer-toolbar,.viewer-foot,.model-summary small,.model-summary span{color:#aebfd0}.file-help summary,summary{color:#e0edf8}
+.viewer-toolbar select,select{background:#10283a;color:#e5f0fa;border-color:#405c72}.image-frame{border-color:#365269}.image-open{background:#07111a}.empty-image{color:#a1b6c9}.enhancement{color:#a8c4d8}
+.prediction-card{background:linear-gradient(110deg,#143344,#124b50);border-color:#2c6870}.prediction-card h2{color:#eef9ff}.prediction-card p{color:#c5e1e5}.prediction-card .primary{background:#8ee8dc;color:#0b3037}
+.number,.model-summary strong,.metadata dd{color:#eaf4fc}.metadata dt,.score-labels,.result-context>p{color:#b5c8d9}.score-track{background:#2d4255}.score-track>i{background:#f3be6e}.error{background:#48232d;color:#ffd8dd;border-color:#8f4354}
+.guide-item p,.reading-card p,.guide-tip,.faq details p,.architecture-notes p{color:#b5c8d9}.guide-number,.guide-item:nth-child(2) .guide-number,.guide-item:nth-child(3) .guide-number{background:#234759;color:#a6eddf}.sample-filenames code{background:#0b1c2b;color:#b3cddd}
+.method-section{background:linear-gradient(120deg,#102d43,#164449);border-color:#376171}.method-badge{color:#b4efe4;border-color:#467777;background:#143b45}.method-note{background:#071b2a66;border-color:#375469}.pipeline p{color:#d4e5f1}.pipeline small{color:#aac6d5}
+.reading-label{color:#8bdccd}.faq details{border-color:#354c60}.faq summary{color:#e0eef8}.project-section>div>p:not(.eyebrow),.project-notes>div{color:#b6c9d9}.project-notes strong{color:#eef6ff}.project-notes span{background:#23434f;color:#9de7d8}footer{color:#a4b6c8;border-color:#2c4358}
+.study-strip{background:#122333;border-color:#30495d}.study-strip>div,.study-strip>a{border-color:#30495d}.study-strip span,.study-strip small{color:#aebfd0}.study-strip strong{color:#e8f3fc}.study-strip>a{background:#1b3c4b;color:#b9f2e7}.study-strip>a:hover{background:#245567}
+.architecture-notes span,.detail-index{color:#93dcd1}.architecture-canvas{box-shadow:0 16px 40px #0003;border-color:#426071}
+.evidence-date{color:#b8cddd}.evidence-metrics article,.evidence-metrics article:nth-child(2){background:#153744;border-color:#32616b}.evidence-metrics span,.evidence-metrics p{color:#c1d8e4}.evidence-metrics strong,.evidence-metrics strong small{color:#a6f1e3}.evidence-metrics .pending-metric{background:#302e26;border-color:#655c42}.pending-metric strong{color:#f4d79e}
+.chart-tabs{background:#0d1d2c;border-color:#324b60}.chart-tabs button{color:#b9cedd}.chart-tabs button.selected{background:#244b5e;color:#b9faea;border-color:#83d6c7}.chart-tabs button:hover:not(.selected){background:#1c364a;color:#fff}.chart-heading span{color:#93bece}.chart-heading a{color:#93e6d7}
+.research-chart img{background:#fff;border-radius:10px;border:1px solid #3e5467}.research-chart figcaption{color:#b9cbda}.chart-takeaway{background:#193445;border-color:#355367}.chart-takeaway span{color:#a1e8dc}.chart-takeaway p{color:#c2d5e3}
+.epoch-inspector label strong{color:#9dedde}.epoch-inspector dt,.epoch-inspector p{color:#b7c9d9}.epoch-inspector dd{color:#e8f4fc}.evidence-bottom p{color:#b7cadb}.evidence-bottom strong,.evidence-bottom summary{color:#e3f1fc}.evidence-bottom a{color:#8fe6d8}
+.preprocessing-section{background:linear-gradient(135deg,#142b3d,#102535);border-color:#365367}.preprocess-flow li{border-color:#3b6a78}.preprocess-flow span{color:#96e3d5}.preprocess-flow p{color:#b8ccdc}.transform-demo{background:#091c2a;border:1px solid #34586c}.transform-demo p{color:#c0d4e4}.image-guide-link{background:#193e48;border-color:#3a6b73;color:#a5f0e2}
+.processing-table th,.processing-table td:first-child{color:#e0eef8}.processing-table td{color:#b7cbdc}.processing-table td,.processing-table th{border-color:#344e63}.processing-table caption{color:#bdd2e1}th{color:#d4e5f1}
+.clinical-section{background:linear-gradient(135deg,#182b3a,#16212e);border-color:#3a4a5a;border-top-color:#cfa561}.clinical-form{background:#0f2030;border-color:#365066}.clinical-form p,.clinical-form small,.clinical-form label span{color:#b4c6d8}.clinical-form input,.clinical-form select{background:#091b2b;color:#e8f3fc;border-color:#49677f}.clinical-form input::placeholder{color:#98adbf}.clinical-form input:disabled{background:#192b39;color:#a3b7c8}.clinical-form #clinical-error{color:#ffb8c3}
+.clinical-metrics>div,.clinical-scores article{background:#142f40;border-color:#3a586e}.clinical-metrics span{color:#bad0df}.clinical-metrics strong,.clinical-scores strong{color:#e9f6ff}.clinical-scope{color:#bdccda;border-color:#cfa561}.clinical-scores article:last-child{background:#164b50;border-color:#4c8c86}.clinical-scores article:last-child strong{color:#a0f3dd}#clinical-result{border-color:#426079}
+dialog{background:#102333;color:#e9f2fa;border:1px solid #446078}dialog p{color:#b6cbd9}dialog img{background:#050c13}
+:focus-visible{outline:2px solid #9beee1;outline-offset:4px}.content-section :focus-visible{outline-color:#9beee1}
+@media(max-width:650px){.intro{padding:22px}}
+@media print{:root{color-scheme:light}body,.shell{background:white;color:#152c40}}
+.study-strip>div{background:#122333}.file-label{background:#204558;color:#e8f8ff;border-color:#53798e}.file-label:hover{background:#2b586b}
+.section-kicker{background:#3a3020;color:#f2d9a7;border-color:#6e593b}
+figcaption{color:#b6cddd}figcaption>span{color:#d9edf6}
+
+/* Efectos ambientales: no representan una exploración ni actividad del modelo. */
+.intro:after{content:"";position:absolute;inset:-70%;z-index:-1;pointer-events:none;background:conic-gradient(from 90deg,transparent 20%,#39c8bb22 35%,transparent 50%,#678fed17 65%,transparent 80%);animation:ambient-orbit 28s linear infinite}
+.intro{box-shadow:0 12px 65px #0a090b55,inset 0 1px #8ed8df22}
+.card,.architecture-notes article,.clinical-metrics>div{transition:border-color .3s,box-shadow .3s,transform .3s}
+.card:hover,.architecture-notes article:hover{border-color:#5b9aa7;box-shadow:0 10px 35px #0004,0 0 24px #4fceb20d}
+.nav-link.active{box-shadow:inset 3px 0 #8aede0,0 0 20px #5cdac514}
+.network-arrow{animation:signal-glow 3s ease-in-out 3}.network-arrow:nth-child(4){animation-delay:.4s}.network-arrow:nth-child(6){animation-delay:.8s}
+.section-arrived{animation:section-arrive .65s ease-out both}
+.rotation-control{display:flex;justify-content:space-between;align-items:center;color:#d9edf7;font-size:13px;margin-top:20px}.rotation-control output{font:600 22px monospace;color:#9cf0dd}
+.rotation-slider{width:100%;accent-color:#8ce5d6;margin:15px 0;cursor:ew-resize}.rotation-slider:focus-visible{outline:2px solid #a1efdf;outline-offset:4px}
+@keyframes ambient-orbit{to{transform:rotate(360deg)}}
+@keyframes signal-glow{50%{color:#b9fff0;text-shadow:0 0 18px #65e8d5}}
+@keyframes section-arrive{from{transform:translateY(14px)}to{transform:translateY(0)}}
+@media(prefers-reduced-motion:reduce){*,*:before,*:after{animation:none!important;transition:none!important}}
+.motion-paused *,.motion-paused *:before,.motion-paused *:after{animation:none!important;transition:none!important}

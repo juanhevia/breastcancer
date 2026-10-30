@@ -1,0 +1,37 @@
+{
+  "mejor_epoca": 6,
+  "seleccion": "auc",
+  "valor_seleccion": 0.5760080645161291,
+  "pacientes": 219,
+  "metodo": "mean",
+  "umbral": 0.5,
+  "matriz_confusion": {
+    "VP": 0,
+    "VN": 155,
+    "FP": 0,
+    "FN": 64
+  },
+  "accuracy": 0.7077625570776256,
+  "sensibilidad": 0.0,
+  "especificidad": 1.0,
+  "precision": null,
+  "auc": 0.5760080645161291,
+  "entrenamiento": {
+    "pacientes": 878,
+    "metodo": "mean",
+    "umbral": 0.5,
+    "matriz_confusion": {
+      "VP": 0,
+      "VN": 620,
+      "FP": 0,
+      "FN": 258
+    },
+    "accuracy": 0.7061503416856492,
+    "sensibilidad": 0.0,
+    "especificidad": 1.0,
+    "precision": null,
+    "auc": 0.6006439109777444
+  },
+  "train_eval_loss": 0.6044764683417825,
+  "brecha_auc": 0.02463584646161532
+}

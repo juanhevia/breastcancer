@@ -21,11 +21,13 @@ El apartado de imágenes describe el código de v7/v8: PNG gris 256×256, float3
 tres fases juntas, solo durante entrenamiento. El esquema animado es sintético;
 no es una imagen de paciente ni modifica las imágenes que se cargan al visor.
 
-La evidencia muestra el v8 final: pérdida y AUC de las 15 épocas, comparación
-CV completa, ROC, matriz, calibración y dos errores del test. Cada figura tiene
-un único PNG en `app/static/evidencia/v8/`; el Word reutiliza esos mismos archivos.
-Las métricas distinguen selección interna (AUC 0,576), CV (0,543 ± 0,048) y test
-(AUC 0,504; IC 95 % 0,410–0,597). No se reajusta el modelo después del test.
+La vista principal muestra pérdida y AUC de las 15 épocas, comparación CV,
+ROC interna comparada y matriz interna de v8. Distingue validación interna
+(AUC 0,576), CV (0,543 ± 0,048) y evaluación privada del profesorado pendiente.
+El test disponible de 176 pacientes ya se evaluó: sus archivos y el resultado
+completo se conservan en la memoria; no se confunde con la validación privada.
+`python -m app.exportar_complemento` genera las dos figuras internas a partir de
+las predicciones guardadas en `models/complemento_v8/`, sin inferir ni entrenar.
 
 `python -m app.exportar_v8 --origen models/importados_entrega_v8/models`
 verifica particiones, pesos y métricas contra las predicciones guardadas y exporta
@@ -62,7 +64,9 @@ preseleccionado ni envíos a internet. El manifiesto conserva la justificación 
 el SHA-256 de los pesos. Los modelos de prueba se identifican como tales.
 
 El paquete final es `models/app_modelo_v8`, época 6 y umbral 0,356243176.
-Los pesos permanecen fuera de Git. La variable `BREAST_MODEL_DIR` debe apuntar
+Los checkpoints de entrenamiento permanecen fuera de Git; la copia congelada para
+despliegue está en `app/paquetes/v8`. Consulta [RENDER.md](RENDER.md) para publicar.
+La variable `BREAST_MODEL_DIR` debe apuntar
 al paquete local; no al directorio de resultados de test.
 
 ```bash
@@ -112,3 +116,26 @@ inicialmente. Fijar y probar versiones en el destino antes de la defensa.
 Pruebas: `python -m unittest tests.test_app -v` (requiere `httpx`). Verifican
 equivalencia con el pipeline, API, errores y reproducibilidad; no rendimiento.
 Referencia: [FastAPI](https://fastapi.tiangolo.com/).
+
+
+## Complemento opcional: edad y subtipo
+
+La sección «Imágenes + variables» compara tres puntuaciones de la misma paciente.
+V8 y su umbral permanecen intactos. El complemento JSON incluido en
+`app/paquetes/complemento_v8.json` se carga automáticamente si coincide el SHA-256
+de la CNN. `BREAST_COMPLEMENTO` permite elegir otro archivo. No contiene filas de
+pacientes ni imágenes; solo parámetros ajustados y métricas agregadas.
+
+Ajuste reproducible, rápido y sin entrenar de nuevo la CNN:
+
+```bash
+python -m src.training.entrenar_combinado --origen models/final_train_v8/normal --solo-plan
+python -m src.training.entrenar_combinado --origen models/final_train_v8/normal --salida models/complemento_v8
+```
+
+No sobrescribe una salida existente. Para conectar ese nuevo ajuste, define
+`BREAST_COMPLEMENTO=models/complemento_v8/combinado.json` al arrancar Uvicorn.
+El paquete incluido corresponde al ajuste original, descrito en
+`docs/complemento_variables.md`. El volumen permanece desactivado.
+
+Pruebas del complemento: `python -m unittest tests.test_combinado tests.test_app -q`.

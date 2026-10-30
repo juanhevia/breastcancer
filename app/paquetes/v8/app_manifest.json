@@ -1,0 +1,7 @@
+{
+  "umbral": 0.356243176,
+  "origen_umbral": "validacion_interna",
+  "criterio_umbral": "Máximo F1 macro en validación interna; no criterio clínico",
+  "sha256": "139511ded0625b6b1fdac6cfed04c3e03122b9d660c3ff4b8503a0e2e4115b66",
+  "estado_modelo": "V8 seleccionado · evaluación final realizada"
+}

@@ -1,0 +1,7 @@
+# Solo servidor Linux CPU; no modifica el entorno ROCm del laboratorio.
+--extra-index-url https://download.pytorch.org/whl/cpu
+torch==2.2.2+cpu
+numpy==1.26.4
+pillow>=10,<12
+fastapi==0.124.0
+uvicorn==0.38.0

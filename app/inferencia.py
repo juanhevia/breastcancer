@@ -92,7 +92,10 @@ def vista_previa(paciente):
 
 
 class Predictor:
-    def __init__(self, carpeta):
+    def __init__(self, carpeta, batch_size=8):
+        if not isinstance(batch_size, int) or not 1 <= batch_size <= 8:
+            raise ValueError('El lote de inferencia debe estar entre 1 y 8 cortes.')
+        self.batch_size = batch_size
         carpeta = Path(carpeta)
         config = json.loads((carpeta / 'configuracion.json').read_text())
         manifiesto = json.loads((carpeta / 'app_manifest.json').read_text())
@@ -139,7 +142,7 @@ class Predictor:
         inicio = time.perf_counter()
         with self.lock, torch.inference_mode():
             self.modelo.eval()
-            probs = torch.cat([torch.sigmoid(self.modelo(x)) for x in paciente['tensor'].split(8)])
+            probs = torch.cat([torch.sigmoid(self.modelo(x)) for x in paciente['tensor'].split(self.batch_size)])
         if not torch.isfinite(probs).all():
             raise ValueError("El modelo produjo valores no finitos; no se muestra una predicción.")
         valores = probs.numpy().astype(np.float64)

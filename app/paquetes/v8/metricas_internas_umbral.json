@@ -1,0 +1,44 @@
+{
+  "pacientes": 219,
+  "metodo": "mean",
+  "umbral": 0.356243176,
+  "matriz_confusion": {
+    "VP": 27,
+    "VN": 109,
+    "FP": 46,
+    "FN": 37
+  },
+  "accuracy": 0.6210045662100456,
+  "sensibilidad": 0.421875,
+  "especificidad": 0.7032258064516129,
+  "precision": 0.3698630136986301,
+  "auc": 0.5760080645161291,
+  "f1_macro": 0.559206537817979,
+  "por_clase": {
+    "sin_pCR": {
+      "precision": 0.7465753424657534,
+      "recall": 0.7032258064516129,
+      "f1-score": 0.7242524916943521,
+      "support": 155.0
+    },
+    "con_pCR": {
+      "precision": 0.3698630136986301,
+      "recall": 0.421875,
+      "f1-score": 0.39416058394160586,
+      "support": 64.0
+    },
+    "accuracy": 0.6210045662100456,
+    "macro avg": {
+      "precision": 0.5582191780821918,
+      "recall": 0.5625504032258064,
+      "f1-score": 0.559206537817979,
+      "support": 219.0
+    },
+    "weighted avg": {
+      "precision": 0.6364858947895164,
+      "recall": 0.6210045662100456,
+      "f1-score": 0.6277872766433213,
+      "support": 219.0
+    }
+  }
+}

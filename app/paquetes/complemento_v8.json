@@ -1,0 +1,215 @@
+{
+  "version": 1,
+  "sha256_cnn": "139511ded0625b6b1fdac6cfed04c3e03122b9d660c3ff4b8503a0e2e4115b66",
+  "variables": [
+    "age",
+    "HR_HER2_STATUS"
+  ],
+  "mediana_edad": 48.0,
+  "modelos": {
+    "solo_variables": {
+      "media": [
+        48.76136674259681,
+        0.003416856492027335,
+        0.4145785876993166,
+        0.3132118451025057,
+        0.27107061503416857,
+        0.0011389521640091116
+      ],
+      "escala": [
+        10.36179148281712,
+        0.058353933746922944,
+        0.49264914728491754,
+        0.46379972530176206,
+        0.4445124708027517,
+        0.03372914099079921
+      ],
+      "coeficientes": [
+        -0.21402716907738029,
+        0.034207683313248353,
+        -0.40035334521253285,
+        0.15288126823203443,
+        0.268778506255941,
+        0.20314914065509546
+      ],
+      "intercepto": -0.9682335302627769,
+      "umbral": 0.32580391449182805
+    },
+    "combinado": {
+      "media": [
+        48.76136674259681,
+        0.003416856492027335,
+        0.4145785876993166,
+        0.3132118451025057,
+        0.27107061503416857,
+        0.0011389521640091116,
+        -0.6521110882847827
+      ],
+      "escala": [
+        10.36179148281712,
+        0.058353933746922944,
+        0.49264914728491754,
+        0.46379972530176206,
+        0.4445124708027517,
+        0.03372914099079921,
+        0.11137621707407057
+      ],
+      "coeficientes": [
+        -0.17567622373377273,
+        0.028014427509233632,
+        -0.40586848141564824,
+        0.15241297825046352,
+        0.27560884752445464,
+        0.20012647365973987,
+        0.4576300440436672
+      ],
+      "intercepto": -1.0116459293166462,
+      "umbral": 0.3268511030247533
+    }
+  },
+  "metricas_internas": {
+    "solo_imagenes": {
+      "pacientes": 219,
+      "metodo": "mean",
+      "umbral": 0.356243176,
+      "matriz_confusion": {
+        "VP": 27,
+        "VN": 109,
+        "FP": 46,
+        "FN": 37
+      },
+      "accuracy": 0.6210045662100456,
+      "sensibilidad": 0.421875,
+      "especificidad": 0.7032258064516129,
+      "precision": 0.3698630136986301,
+      "auc": 0.5760080645161291,
+      "f1_macro": 0.559206537817979,
+      "por_clase": {
+        "sin_pCR": {
+          "precision": 0.7465753424657534,
+          "recall": 0.7032258064516129,
+          "f1-score": 0.7242524916943521,
+          "support": 155.0
+        },
+        "con_pCR": {
+          "precision": 0.3698630136986301,
+          "recall": 0.421875,
+          "f1-score": 0.39416058394160586,
+          "support": 64.0
+        },
+        "accuracy": 0.6210045662100456,
+        "macro avg": {
+          "precision": 0.5582191780821918,
+          "recall": 0.5625504032258064,
+          "f1-score": 0.559206537817979,
+          "support": 219.0
+        },
+        "weighted avg": {
+          "precision": 0.6364858947895164,
+          "recall": 0.6210045662100456,
+          "f1-score": 0.6277872766433213,
+          "support": 219.0
+        }
+      }
+    },
+    "solo_variables": {
+      "pacientes": 219,
+      "metodo": "mean",
+      "umbral": 0.32580391449182805,
+      "matriz_confusion": {
+        "VP": 52,
+        "VN": 95,
+        "FP": 60,
+        "FN": 12
+      },
+      "accuracy": 0.6712328767123288,
+      "sensibilidad": 0.8125,
+      "especificidad": 0.6129032258064516,
+      "precision": 0.4642857142857143,
+      "auc": 0.6885584677419355,
+      "f1_macro": 0.6580499653018737,
+      "por_clase": {
+        "sin_pCR": {
+          "precision": 0.8878504672897196,
+          "recall": 0.6129032258064516,
+          "f1-score": 0.7251908396946565,
+          "support": 155.0
+        },
+        "con_pCR": {
+          "precision": 0.4642857142857143,
+          "recall": 0.8125,
+          "f1-score": 0.5909090909090909,
+          "support": 64.0
+        },
+        "accuracy": 0.6712328767123288,
+        "macro avg": {
+          "precision": 0.676068090787717,
+          "recall": 0.7127016129032258,
+          "f1-score": 0.6580499653018737,
+          "support": 219.0
+        },
+        "weighted avg": {
+          "precision": 0.764068986959782,
+          "recall": 0.6712328767123288,
+          "f1-score": 0.6859486847984182,
+          "support": 219.0
+        }
+      }
+    },
+    "combinado": {
+      "pacientes": 219,
+      "metodo": "mean",
+      "umbral": 0.3268511030247533,
+      "matriz_confusion": {
+        "VP": 48,
+        "VN": 102,
+        "FP": 53,
+        "FN": 16
+      },
+      "accuracy": 0.684931506849315,
+      "sensibilidad": 0.75,
+      "especificidad": 0.6580645161290323,
+      "precision": 0.4752475247524752,
+      "auc": 0.7165322580645161,
+      "f1_macro": 0.6645354645354645,
+      "por_clase": {
+        "sin_pCR": {
+          "precision": 0.864406779661017,
+          "recall": 0.6580645161290323,
+          "f1-score": 0.7472527472527473,
+          "support": 155.0
+        },
+        "con_pCR": {
+          "precision": 0.4752475247524752,
+          "recall": 0.75,
+          "f1-score": 0.5818181818181818,
+          "support": 64.0
+        },
+        "accuracy": 0.684931506849315,
+        "macro avg": {
+          "precision": 0.669827152206746,
+          "recall": 0.7040322580645162,
+          "f1-score": 0.6645354645354645,
+          "support": 219.0
+        },
+        "weighted avg": {
+          "precision": 0.7506798741169682,
+          "recall": 0.684931506849315,
+          "f1-score": 0.6989065728791757,
+          "support": 219.0
+        }
+      }
+    }
+  },
+  "entrenamiento": 878,
+  "validacion": 219,
+  "advertencia": "Análisis exploratorio posterior al test v8. CNN congelada; sus puntuaciones de entrenamiento son internas a su ajuste. Validación compartida con la selección CNN; no estima rendimiento independiente.",
+  "configuracion": {
+    "C": 1.0,
+    "semilla": 42,
+    "max_iter": 2000,
+    "transformacion_imagen": "logit recortado a [1e-6,1-1e-6]",
+    "imputacion": "Mediana de entrenamiento más indicador de ausencia",
+    "umbral": "Máximo F1 macro en validación interna"
+  }
+}

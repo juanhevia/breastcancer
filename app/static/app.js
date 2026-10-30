@@ -1,6 +1,7 @@
 'use strict';
 const $ = id => document.getElementById(id);
 const fases = ['pre', 'early', 'late', 'realce'];
+let complemento = null, comparacion = null;
 let modelo = null, archivos = [], vistas = [], resultado = null, revision = 0, ocupado = false, leyendo = false;
 const porcentaje = x => (x * 100).toLocaleString('es-ES', {maximumFractionDigits: 1}) + ' %';
 function lista(id, entradas) {
@@ -24,6 +25,8 @@ function controles() {
   $('limpiar').disabled = ocupado || leyendo;
   $('inspeccionar').disabled = ocupado || leyendo || !archivos.length;
   $('predecir').disabled = ocupado || leyendo || !vistas.length || !modelo?.disponible;
+  $('clinical-run').disabled = ocupado || leyendo || !vistas.length || !modelo?.disponible || !complemento?.disponible;
+  $('clinical-age').disabled = ocupado || leyendo; $('clinical-subtype').disabled = ocupado || leyendo;
   $('corte').disabled = !vistas.length;
   const indice = Number($('corte').value);
   $('anterior').disabled = !vistas.length || indice === 0;
@@ -32,10 +35,10 @@ function controles() {
     !modelo?.disponible ? 'Imágenes preparadas. La inferencia se activará al conectar el modelo seleccionado.' :
     `${vistas.length} ${vistas.length===1?'corte disponible: resultado limitado a ese corte.':'cortes disponibles: se promediarán sus probabilidades.'}`;
 }
-async function peticion(ruta, payload) {
+async function peticion(ruta, payload, extra = {}) {
   const controller = new AbortController(); const timeout = setTimeout(()=>controller.abort(),180000);
   try {
-    const r = await fetch(ruta, {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({files:payload}),signal:controller.signal});
+    const r = await fetch(ruta, {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({files:payload, ...extra}),signal:controller.signal});
     let dato; try { dato = await r.json(); } catch { throw new Error('El servidor no devolvió una respuesta válida. Vuelve a intentarlo.'); }
     if (!r.ok) throw new Error(typeof dato.detail === 'string' ? dato.detail : 'No se pudo procesar la petición.'); return dato;
   } catch(e) {
@@ -49,6 +52,7 @@ function leer(file) { return new Promise((resolve,reject) => {
   reader.onload = () => resolve({name:file.name, content:reader.result.split(',')[1]}); reader.readAsDataURL(file);
 }); }
 function limpiarVista() {
+  $('clinical-form').reset(); limpiarComparacion(); actualizarDemo(null);
   vistas=[]; resultado=null; $('resultado').hidden=true; $('corte').replaceChildren(new Option('— Corte —',''));
   $('titulo-paciente').textContent='Fases y realce'; $('detalle-paciente').textContent='Las tres fases se mantienen alineadas';
   $('visor-estado').textContent='Sin imágenes'; $('visor-estado').classList.remove('ready');
@@ -107,7 +111,7 @@ $('inspeccionar').addEventListener('click',async()=>{
 });
 function mostrarCorte(){
   const v=vistas[Number($('corte').value)];if(v)for(const f of fases){$(f).src=v[f];$(f).hidden=false;$(f).closest('.image-frame').classList.add('loaded');$(f).parentElement.disabled=false;}
-  controles();
+  actualizarDemo(v); controles();
 }
 $('corte').addEventListener('change',mostrarCorte);
 $('anterior').addEventListener('click',()=>{$('corte').value=Number($('corte').value)-1;mostrarCorte();});
@@ -148,7 +152,7 @@ function seccionActiva(enlace) {
   }
   $('seccion-actual').textContent = enlace.textContent.trim();
 }
-for (const a of enlaces) a.addEventListener('click', () => seccionActiva(a));
+for (const a of enlaces) {a.title=a.textContent.trim();a.addEventListener('click', () => seccionActiva(a));}
 // Sigue la sección visible sin modificar el historial ni interrumpir el scroll.
 let scrollPendiente = false;
 window.addEventListener('scroll', () => {
@@ -190,3 +194,62 @@ function movimiento(pausado) {
 movimiento(menosMovimiento.matches);
 $('movimiento').addEventListener('click', () => movimiento(!document.body.classList.contains('motion-paused')));
 menosMovimiento.addEventListener('change', e => movimiento(e.matches));
+
+function limpiarComparacion() {
+  comparacion=null; $('clinical-result').hidden=true; $('clinical-error').hidden=true;
+}
+for(const id of ['clinical-age','clinical-subtype']) $(id).addEventListener('input',limpiarComparacion);
+$('clinical-form').addEventListener('submit',async e=>{
+  e.preventDefault(); if($('clinical-run').disabled)return;
+  const age=$('clinical-age').value;
+  const variables={age:age===''?null:Number(age),HR_HER2_STATUS:$('clinical-subtype').value||null};
+  limpiarComparacion(); ocupado=true; controles(); $('clinical-run').textContent='Comparando…';
+  try {
+    comparacion=await peticion('/api/predecir_combinado',archivos,{variables});
+    const cards=[];
+    for(const [key,title] of [['solo_imagenes','Solo imágenes'],['solo_variables','Edad + subtipo'],['combinado','Imágenes + variables']]) {
+      const r=comparacion[key], card=document.createElement('article');
+      const h=document.createElement('h4'), score=document.createElement('strong'), text=document.createElement('p');
+      h.textContent=title;score.textContent=porcentaje(r.probabilidad);
+      text.textContent=`${r.clase?'Con pCR':'Sin pCR'} · Umbral ${porcentaje(r.umbral)}`;
+      card.append(h,score,text);cards.push(card);
+    }
+    $('clinical-scores').replaceChildren(...cards);
+    $('clinical-result-note').textContent=`Paciente: ${comparacion.solo_imagenes.paciente}. ${comparacion.solo_imagenes.numero_cortes} cortes. ${comparacion.edad_imputada?'Edad ausente: se utiliza la mediana del entrenamiento. ':''}Puntuaciones de investigación; no equivalen a probabilidades clínicas validadas.`;
+    $('clinical-result').hidden=false;
+  }catch(e){comparacion=null;$('clinical-error').textContent=e.message;$('clinical-error').hidden=false;}
+  finally {ocupado=false;$('clinical-run').textContent='Comparar estimaciones';controles();}
+});
+$('clinical-download').addEventListener('click',()=>{
+  if(!comparacion)return;const url=URL.createObjectURL(new Blob([JSON.stringify(comparacion,null,2)],{type:'application/json'}));
+  const a=document.createElement('a');a.href=url;a.download='comparacion_paciente.json';a.click();setTimeout(()=>URL.revokeObjectURL(url),1000);
+});
+(async()=>{try{
+  const r=await fetch('/api/complemento');if(!r.ok)throw new Error();complemento=await r.json();
+  $('clinical-status').textContent=complemento.disponible?'Complemento conectado. Valida las imágenes y aporta edad o subtipo.':'Complemento sin conectar: la predicción de imágenes sigue disponible.';
+  if(complemento.disponible && complemento.metricas) {
+    const cards=[];
+    for(const [key,label] of [['solo_imagenes','Solo imágenes'],['solo_variables','Edad + subtipo'],['combinado','Imágenes + variables']]) {
+      const card=document.createElement('div'), name=document.createElement('span'), value=document.createElement('strong');
+      name.textContent=label;value.textContent=complemento.metricas[key].auc.toFixed(3).replace('.',',');card.append(name,value);cards.push(card);
+    }
+    $('clinical-metrics').replaceChildren(...cards);
+    const filas=[];
+    for(const [key,label] of [['solo_imagenes','Imágenes'],['solo_variables','Edad + subtipo'],['combinado','Combinado']]) {
+      const m=complemento.metricas[key], tr=document.createElement('tr');
+      for(const value of [label,m.matriz_confusion.FN,m.matriz_confusion.FP,porcentaje(m.sensibilidad)]) {const td=document.createElement('td');td.textContent=value;tr.append(td);} filas.push(tr);
+    }
+    $('clinical-confusion-rows').replaceChildren(...filas);$('clinical-confusion').hidden=false;
+
+  }
+}catch(e){$('clinical-status').textContent='No se pudo consultar el complemento. Comprueba que el servidor está actualizado.';}finally{controles();}})();
+
+function actualizarDemo(vista) {
+  for(const fase of ['pre','early','late'])for(const tipo of ['original','transform']) {
+    const img=$(`demo-${tipo}-${fase}`); img.hidden=!vista;
+    if(vista)img.src=vista[fase];else img.removeAttribute('src');
+    img.parentElement.classList.toggle('has-image',Boolean(vista));
+  }
+  $('phantoms').setAttribute('aria-label',vista?'Tres fases del corte seleccionado con una transformación geométrica de ejemplo':'Esquema sintético de tres fases alineadas');
+  $('demo-caption').textContent=vista?`Corte ${vista.corte} del visor. La transformación es una ilustración en pantalla: no cambia las imágenes enviadas al modelo ni reproduce la interpolación del entrenamiento.`:'Ejemplo sintético. Carga y valida imágenes en el visor para comparar sus fases. La demostración ilustra la geometría; no ejecuta el aumento de entrenamiento.';
+}
