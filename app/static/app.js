@@ -250,6 +250,6 @@ function actualizarDemo(vista) {
     if(vista)img.src=vista[fase];else img.removeAttribute('src');
     img.parentElement.classList.toggle('has-image',Boolean(vista));
   }
-  $('phantoms').setAttribute('aria-label',vista?'Tres fases del corte seleccionado con una transformación geométrica de ejemplo':'Esquema sintético de tres fases alineadas');
-  $('demo-caption').textContent=vista?`Corte ${vista.corte} del visor. La transformación es una ilustración en pantalla: no cambia las imágenes enviadas al modelo ni reproduce la interpolación del entrenamiento.`:'Ejemplo sintético. Carga y valida imágenes en el visor para comparar sus fases. La demostración ilustra la geometría; no ejecuta el aumento de entrenamiento.';
+  $('phantoms').setAttribute('aria-label',vista?'Tres fases del corte seleccionado con una transformación geométrica de ejemplo':'Tres fases reales de la figura de ejemplo BreastDCEDL');
+  $('demo-caption').textContent=vista?`Corte ${vista.corte} del visor. La transformación es una ilustración en pantalla: no cambia las imágenes enviadas al modelo ni reproduce la interpolación del entrenamiento.`:'Ejemplo real de la documentación BreastDCEDL (Fridman y colaboradores, CC BY-NC 4.0). Uso ilustrativo: no se envía al modelo. Al validar tus imágenes, verás el corte seleccionado.';
 }

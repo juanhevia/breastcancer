@@ -36,3 +36,7 @@
 .phantom-frame b{z-index:1;background:#061a2ab8;padding:2px 4px;border-radius:3px}.phantom-frame.has-image .phantom{display:none}
 @media(prefers-reduced-motion:reduce){#phantoms .demo-image{transition:none}}
 .motion-paused #phantoms .demo-image{transition:none}
+
+/* Ventanas sobre la figura original: fases reales sin modificar sus intensidades. */
+.phantom{inset:0;background-image:url("/static/evidencia/v8/ejemplo_dce.png");background-repeat:no-repeat;background-size:412.9% 119.2%;background-position:1% 50%;filter:none}
+.phantom.early{background-position:34% 50%;filter:none}.phantom.late{background-position:67% 50%;filter:none}

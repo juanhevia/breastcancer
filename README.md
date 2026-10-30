@@ -7,7 +7,7 @@ orden, apiladas en un tensor de 3 × 256 × 256 y divididas entre 255.
 
 ```text
 .github/workflows/          Comprobaciones automáticas
-app/                        Futura aplicación web
+app/                        Interfaz HTML y servidor Python de inferencia
 docs/                       PDF, guía y revisión del código
 models/                     Pesos y resultados de cada ejecución
 notebooks/                  Exploración y análisis
@@ -417,15 +417,22 @@ revisado y `numpy<2` por compatibilidad. Cada entrenamiento registra su entorno.
 La estructura sigue la referencia proporcionada: `src/models/` contiene el
 **código** de la red y `models/` contiene sus **pesos** y resultados. `dataset/`
 y `metadata/` se conservan en la raíz para mantener las rutas del CSV original.
-Las carpetas de aplicación, notebooks y presentación están preparadas, pero sus
-entregables todavía no están desarrollados.
+La [aplicación HTML](https://breastcancer-bn0a.onrender.com/) está publicada con
+v8 congelado y el complemento exploratorio de edad y subtipo. Los pesos para
+inferencia están en `app/paquetes/v8/`. [Instrucciones de despliegue](app/RENDER.md).
 
-## Revisión y siguientes pasos
+## Entrega
 
-Lee [la revisión](docs/revision.md) y el
-[enunciado oficial](docs/caso_breastdcedl.pdf). Después del entrenamiento
-faltan estudiar overfitting y umbral, fijar el modelo, evaluar test, construir y
-desplegar la aplicación y preparar las cinco diapositivas. La guía docente
+- [Aplicación pública](https://breastcancer-bn0a.onrender.com/).
+- [Presentación visual de cinco diapositivas](presentations/entrega/BreastDCEDL_UAX_5_visual.pptx).
+- [Memoria](docs/memoria/Memoria_BreastDCEDL_Juan_Hevia.docx): pendiente de actualizar el enlace público y el complemento clínico.
+- [Complemento de variables: método y limitaciones](docs/complemento_variables.md).
+
+El modelo final, umbral y test ya están fijados. La AUC interna de la CNN es
+0,576 y la del test disponible es 0,504. La combinación clínica alcanza 0,717
+solo en validación interna reutilizada: no demuestra generalización independiente.
+
+La guía docente
 original está en [docs/GUIA.md](docs/GUIA.md); sus ejemplos
 conservan la estructura original del material proporcionado.
 

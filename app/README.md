@@ -18,8 +18,10 @@ sección visible y se adapta al móvil.
 
 El apartado de imágenes describe el código de v7/v8: PNG gris 256×256, float32
 /255, reflejo horizontal al 50 % y giro uniforme entre −10° y +10° aplicado a las
-tres fases juntas, solo durante entrenamiento. El esquema animado es sintético;
-no es una imagen de paciente ni modifica las imágenes que se cargan al visor.
+tres fases juntas, solo durante entrenamiento. El ejemplo inicial usa las tres fases de la figura real `docs/figures/example_dce.png`
+(BreastDCEDL, Fridman y colaboradores, CC BY-NC 4.0), mediante ventanas CSS
+sin alterar el archivo original. No se envía al modelo. Las imágenes validadas
+en el visor sustituyen a este ejemplo.
 
 La vista principal muestra pérdida y AUC de las 15 épocas, comparación CV,
 ROC interna comparada y matriz interna de v8. Distingue validación interna
